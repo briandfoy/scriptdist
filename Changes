@@ -4,6 +4,11 @@
 0.10 - Mon Jan 12 09:24:28 2004
 * this is the first release, a trial version
 
+0.14 - Thu Sep  2 20:41:33 2004
+* fixed a problem with the prereq.t test
+* cleaned up the distro
+* you don't need to upgrade if you already have this script
+
 0.13 - Sun Feb 22 01:22:42 2004
 	* don't look in CVS or Subversion directories for templates
 	* minor fixes to default templates, mostly quoting issues
