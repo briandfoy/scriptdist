@@ -4,6 +4,10 @@
 0.10 - Mon Jan 12 09:24:28 2004
 * this is the first release, a trial version
 
+0.13 - Sun Feb 22 01:22:42 2004
+	* don't look in CVS or Subversion directories for templates
+	* minor fixes to default templates, mostly quoting issues
+
 0.11 - Sat Feb  7 15:19:01 2004
     * use FindBin to get script name
     * some formatting fixes and warnings quashes
