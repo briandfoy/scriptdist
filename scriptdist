@@ -178,8 +178,6 @@ You may use this program under the same terms as Perl itself.
 my $Path   = $ARGV[0];
 my $Script = basename( $Path );
 
-die "Could not find script [$Script]\n" unless -r $Path;
-
 print "Processing $Script...\n" unless $Quiet;
 
 my %Defaults = (
@@ -249,9 +247,24 @@ FILE: foreach my $filename ( sort keys %Content )
 	}
 
 # Add the script itself
+{
 print "Adding [$Script]...\n";
-copy( $Path, File::Spec->catfile( $Directory, $Script ) );
+my $dist_script = File::Spec->catfile( $Directory, $Script );
 
+if( -e $Path )
+	{
+	print "Copying script...\n";
+	copy( $Path, $dist_script );
+	}
+else
+	{
+	print "Using script template...\n";
+	
+	open my( $fh ), "> $dist_script";
+	print $fh ( script_template( $Script ) );
+	}
+}
+	
 # Create the MANIFEST file
 print "Creating MANIFEST...\n";
 chdir $Directory or die "Could not change to $Directory: $!\n";
@@ -317,7 +330,31 @@ sub copy
 		
 	print "Copied [$input] with $count replacements\n" unless $Quiet;
 	}
-			
+
+sub script_template
+	{
+	my $script_name = shift;
+	
+	return <<"HERE";
+#!/usr/bin/perl
+
+=head1 NAME
+
+$script_name - this script does something
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 AUTHOR
+
+=head1 COPYRIGHT
+
+=cut	
+	
+HERE
+	}
+	
 sub content
 	{
 	my $hash = shift;
