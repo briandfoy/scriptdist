@@ -1,4 +1,5 @@
+# $Id$
 use Test::More;
-eval "use Test::Prereq";
-plan skip_all => "Test::Prereq required to test dependencies" if $@;
+eval "use Test::Prereq 0.51";
+plan skip_all => "Test::Prereq 0.51 required to test dependencies" if $@;
 prereq_ok();
