@@ -6,7 +6,7 @@ eval "use Test::Manifest";
 unless( $@ )
 	{
 	no warnings;
-	
+
 	*ExtUtils::MM_Any::test_via_harness = sub
 		{
 		my($self, $perl, $tests) = @_;
@@ -21,11 +21,12 @@ my $script_name = 'scriptdist';
 
 WriteMakefile(
 	'NAME'      => $script_name,
-	'VERSION'   => '0.13',
+	'VERSION'   => '0.14',
 	'EXE_FILES' =>  [ $script_name ],
-		
+
 	'PREREQ_PM' => {
-			},
+		'Test::More' => '0',
+		},
 
 	'MAN1PODS'  => {
 		$script_name => "\$(INST_MAN1DIR)/$script_name.1",
@@ -34,5 +35,5 @@ WriteMakefile(
 	clean => { FILES => "*.bak $script_name-* " .
 		"t/test_home_dir/test_script.d" },
 	);
-        
+
 1;

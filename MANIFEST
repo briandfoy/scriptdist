@@ -13,3 +13,4 @@ t/test_home_dir/.scriptdistrc
 t/test_home_dir/.scriptdist/INSTALL
 t/test_home_dir/.scriptdist/Makefile.PL
 META.yml                                 Module meta-data (added by MakeMaker)
+README
