@@ -1,3 +1,5 @@
+# $Id$
 compile.t
 pod.t
 prereq.t
+run.t
