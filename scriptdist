@@ -4,22 +4,35 @@ use warnings;
 
 use vars qw( %Content );
 
+use Cwd;
 use ExtUtils::Command;
 use ExtUtils::Manifest;
+use File::Basename qw(basename);
 use File::Find qw(find);
 use File::Spec;
 use FindBin ();
 
+my $Quiet        = $ENV{SCRIPTDIST_DEBUG} || 0;  # print progress messages
+print "Quiet is $Quiet\n";
 my $Name         = $FindBin::Script;
-my $Rc_directory = File::Spec->catfile( $ENV{HOME}, "." . $Name );
-my $Config_file  = File::Spec->catfile( $ENV{HOME}, "." . $Name . "rc" );
+my $Home         = $ENV{HOME} || '';
 
-my $Quiet        = 0;  # print progress messages
+print "Home directory is $Home\n" unless $Quiet;
+
+my $Rc_directory = File::Spec->catfile( $Home, "." . $Name );
+print "RC directory is $Rc_directory\n" unless $Quiet;
+my $Config_file  = File::Spec->catfile( $Home, "." . $Name . "rc" );
+
+warn <<"HERE" unless $Home ne '';
+The environment variable HOME has no value, so I will look in
+the current directory for $Rc_directory and $Config_file. Set
+the HOME environment variable to choose another directory.
+HERE
 
 my $Dir_sep      = do {
-	if( $^O =~ m/MSWin32/ ) { '\\' }
-	elsif( $^O =~ m/Mac/  ) { ":"  }
-	else                    { '/'  }
+	if(    $^O =~ m/MSWin32/ ) { '\\' }
+	elsif( $^O =~ m/Mac/  )    { ":"  }
+	else                       { '/'  }
 	};
 	
 =head1 NAME
@@ -44,6 +57,9 @@ will show up as is in the script's t directory (until I code the parts
 to munge those files).  The script assumes you have specified your
 home directory in the environment variable HOME.
 
+You can turn on optional progress and debugging messages by setting
+the environment variable SCRIPTDIST_DEBUG to a true value.
+
 =head2 The process
 
 =over 4
@@ -58,9 +74,22 @@ YET IMPLEMENTED)
 =item Create a directory named after the script
 
 The distribution directory is named after the script name,
-with a <.d> attached.  The suffix is there only to avoid
-a name conflict. You can rename it after the script
-is moved into the directory.
+with a <.d> attached.  The suffix is there only to avoid a
+name conflict. You can rename it after the script is moved
+into the directory.  If the directory already exists, the
+script stops. You can either move or delete the directory
+and start again.
+
+=item Look for template files
+
+The program looks in C<.scriptdistrc> for files to copy into
+the target script distribution directory. After that, it
+adds more files unless they already exist (i.e. the script
+found them in the template directory).  The script replaces
+strings matching C<%%SCRIPTDIST_FOO%%> with the internal
+value of FOO.  The defined values are currently SCRIPT, which
+substitutes the script name, and VERSION, whose value is
+currently hard-coded at '0.10'.
 
 =item Look for template files
 
@@ -101,9 +130,9 @@ automatically.
 
 =head1 TO DO
 
-* add support for Module::Build (command line s
+* add support for Module::Build (command line switch)
 
-* Create Meta.yaml file
+* Create Meta.yml file
 
 * Automatically generate PREREQ_PM section (needs Module::Info, Module::CoreList)
 
@@ -126,10 +155,15 @@ automatically.
 This source is part of a SourceForge project which always has the
 latest sources in CVS, as well as all of the previous releases.
 
-	https://sourceforge.net/projects/brian-d-foy/
+	http://sourceforge.net/projects/brian-d-foy/
 
 If, for some reason, I disappear from the world, one of the other
 members of the project can shepherd this module appropriately.
+
+=head1 CREDITS
+
+Thanks to Soren Andersen for putting this script through its paces
+and suggesting many changes to actually make it work.
 
 =head1 AUTHOR
 
@@ -147,15 +181,26 @@ You may use this program under the same terms as Perl itself.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-my $Script = $ARGV[0];
-die "Could not find script [$Script]\n" unless -r $Script;
+my $Path   = $ARGV[0];
+my $Script = basename( $Path );
+
+die "Could not find script [$Script]\n" unless -r $Path;
 
 print "Processing $Script...\n" unless $Quiet;
 
-content( $Script );
+my %Defaults = (
+	script  => $Script,
+	version => '0.10',
+	);
+	
+content( \%Defaults );
 
 # Make directories
 my $Directory = "$Script.d";
+die <<"HERE" if -d $Directory;
+Directory $Directory already exists! Either delete it or
+move it out of the way, then rerun this program.
+HERE
 
 foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory )
 	{
@@ -164,6 +209,9 @@ foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory )
 	}
 
 # Copy local template files	
+
+print "RC directory is $Rc_directory\n" unless $Quiet;
+print "cwd is ", getcwd, "\n";
 if( -d $Rc_directory )
 	{
 	print "Looking for local templates...\n" unless $Quiet;
@@ -181,7 +229,7 @@ if( -d $Rc_directory )
 			}
 					
 		my $output = File::Spec->catfile( $Directory, $path );
-		copy( $input, $output );
+		copy( $input, $output, \%Defaults );
 		}
 	}
 
@@ -202,18 +250,18 @@ FILE: foreach my $filename ( sort keys %Content )
 		};
 	
 	my $contents = $Content{$filename};
-	parse( \$contents, $Script );
 	
 	print $fh $contents;
 	}
 
 # Add the script itself
 print "Adding [$Script]...\n";
-copy( $Script, File::Spec->catfile( $Directory, $Script ) );
+copy( $Path, File::Spec->catfile( $Directory, $Script ) );
 
 # Create the MANIFEST file
 print "Creating MANIFEST...\n";
 chdir $Directory or die "Could not change to $Directory: $!\n";
+$ExtUtils::Manifest::Verbose = 0;
 ExtUtils::Manifest::mkmanifest;
 
 print <<"HERE";
@@ -252,29 +300,30 @@ sub find_files
 
     return @files;
 	}
-	
-sub parse
-	{
-	my( $text_ref, $script_name ) = @_;
-	
-	$$text_ref =~ s/%%script%%/$script_name/g;
-	}
-	
+		
 sub copy
 	{
-	my( $input, $output ) = @_;
+	my( $input, $output, $hash ) = @_;
 	
 	print "Opening input [$input] for output [$output]\n";
 	
 	open my($in_fh),        $input  or die "Could not open [$input]: $!\n";
 	open my($out_fh), ">" . $output or warn "Could not open [$output]: $!\n";
 	
-	while( readline $in_fh ) { print $out_fh $_ };
-	}
+	my $count = 0;
+
+	while( readline $in_fh ) 
+		{
+		$count += s/%%SCRIPTDIST_(.*?)%%/$hash->{ lc $1 } || ''/gie;
+		print $out_fh $_ 
+		}
 		
+	print "Copied [$input] with $count replacements\n" unless $Quiet;
+	}
+			
 sub content
 	{
-	my $script_name = shift;
+	my $hash = shift;
 	
 	$Content{"Changes"} =<<"CHANGES";
 # \$Id\$
@@ -286,29 +335,35 @@ CHANGES
 # \$Id\$
 use ExtUtils::MakeMaker;
 
-sub ExtUtils::MM_Any::test_via_harness
+{
+no warnings;
+
+*ExtUtils::MM_Any::test_via_harness = sub
 	{
 	my(\$self, \$perl, \$tests) = \@_;
 
 	return qq|\t\$perl "-MTest::Manifest" | .
 		qq|"-e" "run_t_manifest(\\\$(TEST_VERBOSE), '\\\$(INST_LIB)', | .
 		qq|'\\\$(INST_ARCHLIB)')"\\n|;
-	}
+	};
+}
+
+my \$script_name = $$hash{script};
 
 WriteMakefile(
-		'NAME'      => '$script_name',
-        'VERSION'   => '0.10',
+		'NAME'      => \$script_name,
+        'VERSION'   => '$$hash{version}',
 
-		'EXE_FILES' =>  [ '$script_name' ],
+		'EXE_FILES' =>  [ \$script_name ],
             
 		'PREREQ_PM' => {
                 },
 
 		'MAN1PODS'  => {
-			'$script_name' => '\$(INST_MAN1DIR)/$script_name.1',
+			\$script_name => "\\\$(INST_MAN1DIR)/\$script_name.1",
 			},
 
-		clean => { FILES => '*.bak $script_name-*' },
+		clean => { FILES => "*.bak \$script_name-*" },
 		);
         
 1;
@@ -319,7 +374,7 @@ MAKEFILE_PL
 .cvsignore
 .DS_Store
 .releaserc
-$script_name-.*
+$$hash{script}-.*
 blib
 CVS
 Makefile.old
@@ -341,7 +396,7 @@ RELEASE_RC
 # \$Id\$
 .DS_Store
 .lwpcookies
-$script_name-*
+$$hash{script}-*
 blib
 Makefile
 pm_to_blib
@@ -354,6 +409,7 @@ prereq.t
 TEST_MANIFEST
 
 	$Content{"t/pod.t"} = <<"POD_T";
+# \$Id\$
 use Test::More;
 eval "use Test::Pod 1.00";
 plan skip_all => "Test::Pod 1.00 required for testing POD" if \$@;
@@ -362,6 +418,7 @@ POD_T
 
 
 	$Content{"t/prereq.t"} = <<"PREREQ_T";
+# \$Id\$
 use Test::More;
 eval "use Test::Prereq";
 plan skip_all => "Test::Prereq required to test dependencies" if \$@;
@@ -373,12 +430,13 @@ PREREQ_T
 
 use Test::More tests => 1;
 
-my \$file = "blib/script/$script_name";
+my \$file = "blib/script/$$hash{script}";
 
 print "bail out! Script file is missing!" unless -e \$file;
 
 my \$output = `perl -c \$file 2>&1`;
 
-like( \$output, qr/syntax OK\$/, 'script compiles' );
+print "bail out! Script file is missing!" unless
+	like( \$output, qr/syntax OK$/, 'script compiles' );
 COMPILE_T
 	}
