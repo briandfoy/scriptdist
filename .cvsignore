@@ -1,0 +1,7 @@
+# $Id$
+.DS_Store
+.lwpcookies
+scriptdist-*
+blib
+Makefile
+pm_to_blib

@@ -1,0 +1,12 @@
+# $Id$
+.cvsignore
+.DS_Store
+.releaserc
+scriptdist-.*
+blib
+CVS
+Makefile.old
+Makefile$
+MANIFEST.bak
+MANIFEST.SKIP
+pm_to_blib

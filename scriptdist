@@ -1,0 +1,376 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use vars qw( %Content );
+
+use ExtUtils::Command;
+use ExtUtils::Manifest;
+use File::Find qw(find);
+use File::Spec;
+
+my $Name         = $0;
+my $Rc_directory = File::Spec->catfile( $ENV{HOME}, "." . $Name );
+my $Config_file  = File::Spec->catfile( $ENV{HOME}, "." . $Name . "rc" );
+
+my $Quiet        = 0;  # print progress messages
+
+my $Dir_sep      = do {
+	if( $^O =~ m/MSWin32/ ) { '\\' }
+	elsif( $^O =~ m/Mac/  ) { ":"  }
+	else                    { '/'  }
+	};
+	
+=head1 NAME
+
+scriptdist - create a distribution for a perl script
+
+=head1 SYNOPSIS
+
+% scriptdist script.pl
+
+=head1 DESCRIPTION
+
+The scriptdist program takes a script file and builds, in the current
+working directory, a Perl script distribution around it.  You can add
+other files to the distribution once it is in place.
+
+This script is desinged to be a stand-alone program.  You do not need
+any other files to use it.  However, you can create a directory named
+.scriptdist in your directory, and scriptdist will look for local
+versions of template files there.  Any files in C<~/.scriptdist/t>
+will show up as is in the script's t directory (until I code the parts
+to munge those files).
+
+=head2 The process
+
+=over 4
+
+=item Check for release information
+
+The first time the script is run, or any time the script cannot
+find the file C<.scriptdistrc>, it prompts for CPAN and SourceForge
+developer information that it can add to the .releaserc file. (NOT
+YET IMPLEMENTED)
+
+=item Create a directory named after the script
+
+The distribution directory is named after the script name,
+with a <.d> attached.  The suffix is there only to avoid
+a name conflict. You can rename it after the script
+is moved into the directory.
+
+=item Add Changes
+
+A bare bones Changes file
+
+=item Create the Makefile.PL
+
+
+=item Create the t directory
+
+=item Add compile.t, pod.t, prereq.t
+
+=item Create test_manifest
+
+=item Copy the script into the directory
+
+=item Run make manifest
+
+=item prompt for CVS import
+
+Prints a friendly message to remind you to add the new directory
+to your source control system.
+
+=back
+
+=head2 Creating the Makefile.PL
+
+A few things have to show up in the Makefile.PL---the name of
+the script and the prerequisites modules are the most important.
+Luckily, scriptdist can discover these things and fill them in
+automatically.
+
+=head1 TO DO
+
+* add support for Module::Build (command line s
+
+* Create Meta.yaml file
+
+* Automatically generate PREREQ_PM section (needs Module::Info, Module::CoreList)
+
+* Munge files copied from ~/.scriptdist
+
+* Copy modules into lib directory (to create module dist)
+
+* Command line swriches to turn things on and off
+
+=head2 Maybe a good idea, maybe not
+
+* Add a cover.t and pod coverage test?
+
+* Interactive mode?
+
+* automatically import into CVS?
+
+=head1 SOURCE AVAILABILITY
+
+This source is part of a SourceForge project which always has the
+latest sources in CVS, as well as all of the previous releases.
+
+	https://sourceforge.net/projects/brian-d-foy/
+
+If, for some reason, I disappear from the world, one of the other
+members of the project can shepherd this module appropriately.
+
+=head1 AUTHOR
+
+brian d foy, E<lt>bdfoy@cpan.orgE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2004, brian d foy, All rights reserved.
+
+You may use this program under the same terms as Perl itself.
+
+=cut
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+my $Script = $ARGV[0];
+die "Could not find script [$Script]\n" unless -r $Script;
+
+print "Processing $Script...\n" unless $Quiet;
+
+content( $Script );
+
+# Make directories
+my $Directory = "$Script.d";
+
+foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory )
+	{
+	print "Making directory $dir...\n" unless $Quiet;
+	mkdir $dir, 0755 or die "Could not make [$dir]: $!\n";
+	}
+
+# Copy local template files	
+if( -d $Rc_directory )
+	{
+	print "Looking for local templates...\n" unless $Quiet;
+	foreach my $input ( find_files( $Rc_directory ) )
+		{
+		my( $path ) = $input =~ m/\Q$Rc_directory$Dir_sep\E(.*)/g;
+
+		my @path = File::Spec->splitdir( $path );
+		my $file = pop @path;
+		
+		if( @path )
+			{
+			local @ARGV = File::Spec->catfile( $Directory, @path );
+			ExtUtils::Command::mkpath unless -d $ARGV[0];
+			}
+					
+		my $output = File::Spec->catfile( $Directory, $path );
+		copy( $input, $output );
+		}
+	}
+
+# Add distribution files unless they already exist	
+FILE: foreach my $filename ( sort keys %Content )
+	{
+	my @path = split m|\Q$Dir_sep|, $filename;
+	
+	my $file = File::Spec->catfile( $Directory, @path );
+	
+	print "Checking for file [$filename]... " unless $Quiet;
+	if( -e $file ) { print "already exists\n"; next FILE }
+	
+	print "Adding file [$filename]...\n" unless $Quiet;
+	open my($fh), "> $file" or do {
+		warn "Could not write to [$file]: $!\n";
+		next FILE;
+		};
+	
+	my $contents = $Content{$filename};
+	parse( \$contents, $Script );
+	
+	print $fh $contents;
+	}
+
+# Add the script itself
+print "Adding [$Script]...\n";
+copy( $Script, File::Spec->catfile( $Directory, $Script ) );
+
+# Create the MANIFEST file
+print "Creating MANIFEST...\n";
+chdir $Directory or die "Could not change to $Directory: $!\n";
+ExtUtils::Manifest::mkmanifest;
+
+print <<"HERE";
+------------------------------------------------------------------
+Remember to commit this directory to your source control system.
+In fact, why not do that right now?  Remember, `cvs import` works
+from within a directory, not above it.
+------------------------------------------------------------------
+HERE
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+sub prompt
+	{
+	my( $query ) = shift;
+	
+	print $query;
+	
+	chomp( my $reply = <STDIN> );
+	
+	return $reply;
+	}
+
+sub find_files
+	{
+	my $directory = shift;
+	
+    my @files = ();
+
+    find( sub {
+        	return unless -f $_;
+			push( @files, $File::Find::name );
+    		}, $directory 
+    	);
+
+    return @files;
+	}
+	
+sub parse
+	{
+	my( $text_ref, $script_name ) = @_;
+	
+	$$text_ref =~ s/%%script%%/$script_name/g;
+	}
+	
+sub copy
+	{
+	my( $input, $output ) = @_;
+	
+	print "Opening input [$input] for output [$output]\n";
+	
+	open my($in_fh),        $input  or die "Could not open [$input]: $!\n";
+	open my($out_fh), ">" . $output or warn "Could not open [$output]: $!\n";
+	
+	while( readline $in_fh ) { print $out_fh $_ };
+	}
+		
+sub content
+	{
+	my $script_name = shift;
+	
+	$Content{"Changes"} =<<"CHANGES";
+# \$Id\$
+0.10 - @{ [ scalar localtime ] }
+	+ initial distribution created with $Name
+CHANGES
+
+	$Content{"Makefile.PL"} =<<"MAKEFILE_PL";
+# \$Id\$
+use ExtUtils::MakeMaker;
+
+sub ExtUtils::MM_Any::test_via_harness
+	{
+    my(\$self, \$perl, \$tests) = \@_;
+
+    return qq|\t\$perl "-MTest::Manifest" | .
+           qq|"-e" "run_t_manifest(\\\$(TEST_VERBOSE), '\\\$(INST_LIB)', | .
+           qq|'\\\$(INST_ARCHLIB)')"\\n|;
+	}
+
+WriteMakefile(
+		'NAME'      => '$script_name',
+        'VERSION'   => '0.10',
+
+        'EXE_FILES' =>  [ '$script_name' ],
+            
+        'PREREQ_PM' => {
+                },
+
+        'MAN1PODS'  => {
+                '$script_name' => '\$(INST_MAN1DIR)/$script_name.1',
+                },
+
+        clean => { FILES => '*.bak $script_name-*' },
+        );
+        
+1;
+MAKEFILE_PL
+
+	$Content{"MANIFEST.SKIP"} =<<"MANIFEST_SKIP";
+# \$Id\$
+.cvsignore
+.DS_Store
+.releaserc
+$script_name-.*
+blib
+CVS
+Makefile.old
+Makefile\$
+MANIFEST.bak
+MANIFEST.SKIP
+pm_to_blib
+MANIFEST_SKIP
+
+	$Content{".releaserc"} =<<"RELEASE_RC";
+# \$Id\$
+cpan_user $ENV{CPAN_USER}
+sf_user $ENV{SF_USER}
+sf_group_id $ENV{SF_GROUP_ID}
+sf_package_id $ENV{SF_PACKAGE_ID}
+RELEASE_RC
+
+	$Content{".cvsignore"} =<<"CVSIGNORE";
+# \$Id\$
+.DS_Store
+.lwpcookies
+$script_name-*
+blib
+Makefile
+pm_to_blib
+CVSIGNORE
+
+	$Content{"t/test_manifest"} =<<"TEST_MANIFEST";
+compile.t
+pod.t
+prereq.t
+TEST_MANIFEST
+
+	$Content{"t/pod.t"} = <<"POD_T";
+use Test::More;
+eval "use Test::Pod 1.00";
+plan skip_all => "Test::Pod 1.00 required for testing POD" if \$@;
+all_pod_files_ok();
+POD_T
+
+
+	$Content{"t/prereq.t"} = <<"PREREQ_T";
+use Test::More;
+eval "use Test::Prereq";
+plan skip_all => "Test::Prereq required to test dependencies" if \$@;
+prereq_ok();
+PREREQ_T
+
+	$Content{"t/compile.t"} = <<"COMPILE_T";
+# \$Id\$
+
+use Test::More tests => 1;
+
+my \$file = "blib/script/$script_name";
+
+print "bail out! Script file is missing!" unless -e \$file;
+
+my \$output = `perl -c \$file 2>&1`;
+
+like( \$output, qr/syntax OK\$/, 'script compiles' );
+COMPILE_T
+	}
