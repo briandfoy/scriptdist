@@ -8,4 +8,5 @@ print "bail out! Script file is missing!" unless -e $file;
 
 my $output = `perl -c $file 2>&1`;
 
-like( $output, qr/syntax OK$/, 'script compiles' );
+print "bail out! Script file is missing!" unless
+	like( $output, qr/syntax OK$/, 'script compiles' );
