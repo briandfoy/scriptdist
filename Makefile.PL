@@ -12,7 +12,7 @@ sub ExtUtils::MM_Any::test_via_harness
 
 WriteMakefile(
 		'NAME'      => 'scriptdist',
-        'VERSION'   => '0.10',
+        'VERSION'   => '0.11',
 
         'EXE_FILES' =>  [ 'scriptdist' ],
             
