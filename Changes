@@ -4,3 +4,9 @@
 0.10 - Mon Jan 12 09:24:28 2004
 * this is the first release, a trial version
 
+0.11 - Sat Feb  7 15:19:01 2004
+    * use FindBin to get script name
+    * some formatting fixes and warnings quashes
+    * most fixes thanks to Soren Andersen
+
+
