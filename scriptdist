@@ -91,12 +91,8 @@ value of FOO.  The defined values are currently SCRIPT, which
 substitutes the script name, and VERSION, whose value is
 currently hard-coded at '0.10'.
 
-=item Look for template files
-
-The program looks in C<.scriptdistrc> for files to copy into the
-target script distribution directory. After that, it adds more
-files unless they already exist (i.e. the script found them in the
-template directory).
+While looking for files, scriptdist skips directories named
+"CVS" and ".svn".
 
 =item Add Changes
 
@@ -135,8 +131,6 @@ automatically.
 * Create Meta.yml file
 
 * Automatically generate PREREQ_PM section (needs Module::Info, Module::CoreList)
-
-* Munge files copied from ~/.scriptdist
 
 * Copy modules into lib directory (to create module dist)
 
@@ -209,9 +203,9 @@ foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory )
 	}
 
 # Copy local template files	
-
 print "RC directory is $Rc_directory\n" unless $Quiet;
 print "cwd is ", getcwd, "\n";
+
 if( -d $Rc_directory )
 	{
 	print "Looking for local templates...\n" unless $Quiet;
@@ -294,6 +288,9 @@ sub find_files
 
     find( sub {
         	return unless -f $_;
+        	return if $File::Find::name =~ m/\bCVS\b/ || 
+        		$File::Find::name =~ m/\b\.svn\b/;
+        	print "$File::Find::name\n";
 			push( @files, $File::Find::name );
     		}, $directory 
     	);
@@ -335,20 +332,23 @@ CHANGES
 # \$Id\$
 use ExtUtils::MakeMaker;
 
-{
-no warnings;
+eval "use Test::Manifest";
 
-*ExtUtils::MM_Any::test_via_harness = sub
+unless( \$\@ )
 	{
-	my(\$self, \$perl, \$tests) = \@_;
+	no warnings;
+	
+	*ExtUtils::MM_Any::test_via_harness = sub
+		{
+		my(\$self, \$perl, \$tests) = \@_;
+	
+		return qq|\t\$perl "-MTest::Manifest" | .
+			qq|"-e" "run_t_manifest(\\\$(TEST_VERBOSE), '\\\$(INST_LIB)', | .
+			qq|'\\\$(INST_ARCHLIB)')"\\n|;
+		};
+	}
 
-	return qq|\t\$perl "-MTest::Manifest" | .
-		qq|"-e" "run_t_manifest(\\\$(TEST_VERBOSE), '\\\$(INST_LIB)', | .
-		qq|'\\\$(INST_ARCHLIB)')"\\n|;
-	};
-}
-
-my \$script_name = $$hash{script};
+my \$script_name = "$$hash{script}";
 
 WriteMakefile(
 		'NAME'      => \$script_name,
@@ -437,6 +437,6 @@ print "bail out! Script file is missing!" unless -e \$file;
 my \$output = `perl -c \$file 2>&1`;
 
 print "bail out! Script file is missing!" unless
-	like( \$output, qr/syntax OK$/, 'script compiles' );
+	like( \$output, qr/syntax OK\$/, 'script compiles' );
 COMPILE_T
 	}
