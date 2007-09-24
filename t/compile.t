@@ -6,7 +6,7 @@ my $file = "blib/script/scriptdist";
 
 print "bail out! Script file is missing!" unless -e $file;
 
-my $output = `perl -c $file 2>&1`;
+my $output = `$^X -c $file 2>&1`;
 
 print "bail out! Script file is missing!" unless
 	like( $output, qr/syntax OK$/, 'script compiles' );
