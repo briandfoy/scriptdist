@@ -1,16 +1,15 @@
-# $Id$
 Changes
-MANIFEST			This list of files
 Makefile.PL
+MANIFEST			This list of files
+README
 scriptdist
 t/compile.t
 t/pod.t
+t/pod_coverage.t
 t/prereq.t
 t/run.t
-t/test_manifest
-t/test_home_dir/test_script
-t/test_home_dir/.scriptdistrc
 t/test_home_dir/.scriptdist/INSTALL
 t/test_home_dir/.scriptdist/Makefile.PL
-META.yml                                 Module meta-data (added by MakeMaker)
-README
+t/test_home_dir/.scriptdistrc
+t/test_home_dir/test_script
+t/test_manifest
