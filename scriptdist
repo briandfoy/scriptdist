@@ -182,7 +182,7 @@ print "Processing $Script...\n" unless $Quiet;
 
 my %Defaults = (
 	script  => $Script,
-	version => '0.10',
+	version => '0.10',   # version for the copied script, not this one
 	);
 	
 content( \%Defaults );
@@ -301,9 +301,8 @@ sub find_files
 
     find( sub {
         	return unless -f $_;
-        	return if $File::Find::name =~ m/\bCVS\b/ || 
-        		$File::Find::name =~ m/\b\.svn\b/;
-        	print "$File::Find::name\n";
+        	return if $File::Find::name =~ m<(?:CVS|\.svn|\.git)>;
+        	#print STDERR "Found file $File::Find::name\n";
 			push( @files, $File::Find::name );
     		}, $directory 
     	);
@@ -369,21 +368,7 @@ CHANGES
 # \$Id\$
 use ExtUtils::MakeMaker;
 
-eval "use Test::Manifest";
-
-unless( \$\@ )
-	{
-	no warnings;
-	
-	*ExtUtils::MM_Any::test_via_harness = sub
-		{
-		my(\$self, \$perl, \$tests) = \@_;
-	
-		return qq|\t\$perl "-MTest::Manifest" | .
-			qq|"-e" "run_t_manifest(\\\$(TEST_VERBOSE), '\\\$(INST_LIB)', | .
-			qq|'\\\$(INST_ARCHLIB)')"\\n|;
-		};
-	}
+eval "use Test::Manifest 1.14";
 
 my \$script_name = "$$hash{script}";
 
@@ -411,6 +396,8 @@ MAKEFILE_PL
 .cvsignore
 .DS_Store
 .releaserc
+.svn
+.git
 $$hash{script}-.*
 blib
 CVS

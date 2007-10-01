@@ -7,7 +7,9 @@ my $script_name = 'scriptdist';
 
 WriteMakefile(
 	'NAME'      => $script_name,
-	'VERSION'   => '0.14',
+	'ABSTRACT'  => 'Make a Perl dist around a script',
+
+	'VERSION'   => '0.15',
 	'LICENSE'   => 'perl',
 	'AUTHOR'    => 'brian d foy <bdfoy@cpan.org>',
 

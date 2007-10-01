@@ -77,12 +77,11 @@ ok( $changed, 'Change to program directory' );
 
 SKIP: {
 	my $cwd = getcwd();
-	diag( "cwd is $cwd\n" );
+	#diag( "cwd is $cwd, program dir is $program_dir\n" );
 	
 	skip "I do not think I am in the right directory!", scalar @Files + 3, 
 			unless $changed &&
-		like( $cwd, qr/\Q$program_dir\E$/, 
-			'Path has the new directory' );
+		like( $cwd, qr/\Q$program_dir\E$/, 'Path has the new directory' );
 	
 	diag( "Cleaning up...\n" );
 	
@@ -94,10 +93,12 @@ SKIP: {
 	
 	$changed = chdir '..';
 	ok( $changed, 'Moved above program dir' );
+	$cwd = getcwd();
+	#diag( "cwd is $cwd, program dir is $program_dir\n" );
 	
 	foreach my $dir ( $t_dir, $program_dir )
 		{
 		#diag( "\tremoving dir $dir\n" );
-		ok( rmdir $dir, "Removed $dir" );
+		ok( rmdir $dir, "Removed $dir" ) or diag( "Could not remove [$dir]: $!" );
 		}
 	}
