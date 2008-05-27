@@ -1,5 +1,8 @@
 # $Id$
 
+0.16 - Tue May 27 17:06:37 2008
+	* In compile.t template, use $^X, not "perl" (RT #36207)
+
 0.14 - Thu Sep  2 20:41:33 2004
 	* fixed a problem with the prereq.t test
 	* cleaned up the distro
