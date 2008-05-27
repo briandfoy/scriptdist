@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use vars qw( %Content );
+use vars qw( %Content $VERSION );
 
 use Cwd;
 use ExtUtils::Command;
@@ -11,6 +11,8 @@ use File::Basename qw(basename);
 use File::Find qw(find);
 use File::Spec;
 use FindBin ();
+
+$VERSION = 0.16;
 
 my $Quiet        = $ENV{SCRIPTDIST_DEBUG} || 0;  # print progress messages
 print "Quiet is $Quiet\n";
@@ -458,7 +460,7 @@ my \$file = "blib/script/$$hash{script}";
 
 print "bail out! Script file is missing!" unless -e \$file;
 
-my \$output = `perl -c \$file 2>&1`;
+my \$output = `$^X -c \$file 2>&1`;
 
 print "bail out! Script file is missing!" unless
 	like( \$output, qr/syntax OK\$/, 'script compiles' );
