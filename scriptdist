@@ -396,20 +396,34 @@ my \$script_name = "$$hash{script}";
 
 WriteMakefile(
 		'NAME'      => \$script_name,
-        'VERSION'   => '$$hash{version}',
+		'VERSION'   => '$$hash{version}',
 
 		'EXE_FILES' =>  [ \$script_name ],
-            
+
 		'PREREQ_PM' => {
-                },
+@{ [
+				map {
+					my $v = $_->version // 0;
+					"\t\t\t" . $_->module . " => '$v'\n"
+				} @{$hash->{modules}}
+ ] } 			},
 
 		'MAN1PODS'  => {
 			\$script_name => "\\\$(INST_MAN1DIR)/\$script_name.1",
 			},
 
+		(
+		\$ExtUtils::MakeMaker::VERSION ge '6.48' ?
+			(
+			MIN_PERL_VERSION => $$hash{minimum_perl_version},
+			)
+			:
+			()
+		),
+
 		clean => { FILES => "*.bak \$script_name-*" },
 		);
-        
+
 1;
 MAKEFILE_PL
 
