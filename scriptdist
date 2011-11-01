@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+use utf8;
+use v5.10;
+
 use strict;
 use warnings;
 
@@ -12,7 +15,7 @@ use File::Find qw(find);
 use File::Spec;
 use FindBin ();
 
-$VERSION = 0.16;
+$VERSION = '0.21';
 
 my $Quiet        = $ENV{SCRIPTDIST_DEBUG} || 0;  # print progress messages
 print "Quiet is $Quiet\n";
@@ -144,17 +147,13 @@ automatically.
 
 * Interactive mode?
 
-* automatically import into CVS?
+* automatically import into Git?
 
 =head1 SOURCE AVAILABILITY
 
-This source is part of a SourceForge project which always has the
-latest sources in CVS, as well as all of the previous releases.
+This source is part of a Github project.
 
-	http://sourceforge.net/projects/brian-d-foy/
-
-If, for some reason, I disappear from the world, one of the other
-members of the project can shepherd this module appropriately.
+	https://github.com/briandfoy/scriptdist
 
 =head1 CREDITS
 
@@ -163,11 +162,11 @@ and suggesting many changes to actually make it work.
 
 =head1 AUTHOR
 
-brian d foy, E<lt>bdfoy@cpan.orgE<gt>
+brian d foy, C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
-Copyright 2004, brian d foy, All rights reserved.
+Copyright 2004-2011, brian d foy, All rights reserved.
 
 You may use this program under the same terms as Perl itself.
 
