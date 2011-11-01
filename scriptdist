@@ -135,8 +135,6 @@ automatically.
 
 * Create Meta.yml file
 
-* Automatically generate PREREQ_PM section (needs Module::Info, Module::CoreList)
-
 * Copy modules into lib directory (to create module dist)
 
 * Command line switches to turn things on and off
