@@ -10,7 +10,7 @@ WriteMakefile(
 	'NAME'      => $script_name,
 	'ABSTRACT'  => 'Make a Perl dist around a script',
 
-	'VERSION'   => '0.16',
+	'VERSION'   => '0.21',
 	'LICENSE'   => 'perl',
 	'AUTHOR'    => 'brian d foy <bdfoy@cpan.org>',
 
