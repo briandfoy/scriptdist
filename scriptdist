@@ -39,14 +39,14 @@ my $Dir_sep      = do {
 	elsif( $^O =~ m/Mac/  )    { ":"  }
 	else                       { '/'  }
 	};
-	
+
 =head1 NAME
 
 scriptdist - create a distribution for a perl script
 
 =head1 SYNOPSIS
 
-% scriptdist script.pl
+	% scriptdist script.pl
 
 =head1 DESCRIPTION
 
@@ -172,9 +172,9 @@ You may use this program under the same terms as Perl itself.
 
 =cut
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 my $Path   = $ARGV[0];
 my $Script = basename( $Path );
@@ -195,55 +195,50 @@ Directory $Directory already exists! Either delete it or
 move it out of the way, then rerun this program.
 HERE
 
-foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory )
-	{
+foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory ) {
 	print "Making directory $dir...\n" unless $Quiet;
 	mkdir $dir, 0755 or die "Could not make [$dir]: $!\n";
 	}
 
-# Copy local template files	
+# Copy local template files
 print "RC directory is $Rc_directory\n" unless $Quiet;
 print "cwd is ", getcwd, "\n";
 
-if( -d $Rc_directory )
-	{
+if( -d $Rc_directory ) {
 	print "Looking for local templates...\n" unless $Quiet;
-	foreach my $input ( find_files( $Rc_directory ) )
-		{
+	foreach my $input ( find_files( $Rc_directory ) ) {
 		my( $path ) = $input =~ m/\Q$Rc_directory$Dir_sep\E(.*)/g;
 
 		my @path = File::Spec->splitdir( $path );
 		my $file = pop @path;
-		
-		if( @path )
-			{
+
+		if( @path ) {
 			local @ARGV = File::Spec->catfile( $Directory, @path );
 			ExtUtils::Command::mkpath unless -d $ARGV[0];
 			}
-					
+
 		my $output = File::Spec->catfile( $Directory, $path );
 		copy( $input, $output, \%Defaults );
 		}
 	}
 
-# Add distribution files unless they already exist	
-FILE: foreach my $filename ( sort keys %Content )
-	{
+# Add distribution files unless they already exist
+FILE: foreach my $filename ( sort keys %Content ) {
 	my @path = split m|\Q$Dir_sep|, $filename;
-	
+
 	my $file = File::Spec->catfile( $Directory, @path );
-	
+
 	print "Checking for file [$filename]... " unless $Quiet;
 	if( -e $file ) { print "already exists\n"; next FILE }
-	
+
 	print "Adding file [$filename]...\n" unless $Quiet;
-	open my($fh), "> $file" or do {
+	open my($fh), ">", $file or do {
 		warn "Could not write to [$file]: $!\n";
 		next FILE;
 		};
-	
+
 	my $contents = $Content{$filename};
-	
+
 	print $fh $contents;
 	}
 
@@ -252,20 +247,18 @@ FILE: foreach my $filename ( sort keys %Content )
 print "Adding [$Script]...\n";
 my $dist_script = File::Spec->catfile( $Directory, $Script );
 
-if( -e $Path )
-	{
+if( -e $Path ) {
 	print "Copying script...\n";
 	copy( $Path, $dist_script );
 	}
-else
-	{
+else {
 	print "Using script template...\n";
-	
-	open my( $fh ), "> $dist_script";
+
+	open my( $fh ), ">", $dist_script;
 	print $fh ( script_template( $Script ) );
 	}
 }
-	
+
 # Create the MANIFEST file
 print "Creating MANIFEST...\n";
 chdir $Directory or die "Could not change to $Directory: $!\n";
@@ -280,24 +273,22 @@ from within a directory, not above it.
 ------------------------------------------------------------------
 HERE
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-sub prompt
-	{
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+sub prompt {
 	my( $query ) = shift;
-	
+
 	print $query;
-	
+
 	chomp( my $reply = <STDIN> );
-	
+
 	return $reply;
 	}
 
-sub find_files
-	{
+sub find_files {
 	my $directory = shift;
-	
+
     my @files = ();
 
     find( sub {
@@ -305,36 +296,33 @@ sub find_files
         	return if $File::Find::name =~ m<(?:CVS|\.svn|\.git)>;
         	#print STDERR "Found file $File::Find::name\n";
 			push( @files, $File::Find::name );
-    		}, $directory 
+    		}, $directory
     	);
 
     return @files;
 	}
-		
-sub copy
-	{
+
+sub copy {
 	my( $input, $output, $hash ) = @_;
-	
+
 	print "Opening input [$input] for output [$output]\n";
-	
+
 	open my($in_fh),        $input  or die "Could not open [$input]: $!\n";
 	open my($out_fh), ">" . $output or warn "Could not open [$output]: $!\n";
-	
+
 	my $count = 0;
 
-	while( readline $in_fh ) 
-		{
+	while( readline $in_fh ) {
 		$count += s/%%SCRIPTDIST_(.*?)%%/$hash->{ lc $1 } || ''/gie;
-		print $out_fh $_ 
+		print $out_fh $_
 		}
-		
+
 	print "Copied [$input] with $count replacements\n" unless $Quiet;
 	}
 
-sub script_template
-	{
+sub script_template {
 	my $script_name = shift;
-	
+
 	return <<"HERE";
 #!/usr/bin/perl
 
@@ -350,17 +338,15 @@ $script_name - this script does something
 
 =head1 COPYRIGHT
 
-=cut	
-	
+=cut
+
 HERE
 	}
-	
-sub content
-	{
+
+sub content {
 	my $hash = shift;
-	
+
 	$Content{"Changes"} =<<"CHANGES";
-# \$Id\$
 0.10 - @{ [ scalar localtime ] }
 	+ initial distribution created with $Name
 CHANGES
