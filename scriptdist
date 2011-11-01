@@ -393,7 +393,6 @@ WriteMakefile(
 MAKEFILE_PL
 
 	$Content{"MANIFEST.SKIP"} =<<"MANIFEST_SKIP";
-# \$Id\$
 .cvsignore
 .DS_Store
 .releaserc
@@ -410,15 +409,10 @@ pm_to_blib
 MANIFEST_SKIP
 
 	$Content{".releaserc"} =<<"RELEASE_RC";
-# \$Id\$
 cpan_user @{[ $ENV{CPAN_USER} ? $ENV{CPAN_USER} : '' ]}
-sf_user @{[ $ENV{SF_USER} ? $ENV{SF_USER} : '' ]}
-sf_group_id @{[ $ENV{SF_GROUP_ID} ? $ENV{SF_GROUP_ID} : '' ]}
-sf_package_id @{[ $ENV{SF_PACKAGE_ID} ? $ENV{SF_PACKAGE_ID} : '' ]}
 RELEASE_RC
 
 	$Content{".cvsignore"} =<<"CVSIGNORE";
-# \$Id\$
 .DS_Store
 .lwpcookies
 $$hash{script}-*
@@ -434,7 +428,6 @@ prereq.t
 TEST_MANIFEST
 
 	$Content{"t/pod.t"} = <<"POD_T";
-# \$Id\$
 use Test::More;
 eval "use Test::Pod 1.00";
 plan skip_all => "Test::Pod 1.00 required for testing POD" if \$@;
@@ -443,7 +436,6 @@ POD_T
 
 
 	$Content{"t/prereq.t"} = <<"PREREQ_T";
-# \$Id\$
 use Test::More;
 eval "use Test::Prereq";
 plan skip_all => "Test::Prereq required to test dependencies" if \$@;
@@ -451,8 +443,6 @@ prereq_ok();
 PREREQ_T
 
 	$Content{"t/compile.t"} = <<"COMPILE_T";
-# \$Id\$
-
 use Test::More tests => 1;
 
 my \$file = "blib/script/$$hash{script}";
