@@ -180,12 +180,49 @@ my $Script = basename( $Path );
 print "Processing $Script...\n" unless $Quiet;
 
 my %Defaults = (
-	script  => $Script,
-	version => '0.10',   # version for the copied script, not this one
+	script               => $Script,
+	version              => '0.10',   # version for the copied script, not this one
+	minimum_perl_version => 5,
+	modules              => [],
 	);
-	
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Extract included modules
+if( eval "use Module::Extract::Use; 1" ) {
+	my $extor = Module::Extract::Use->new;
+	my $modules = $extor->get_modules_with_details( $Path );
+
+	unless( $Quiet ) {
+		say "\tFound modules\n\t\t", join "\n\t\t", map { $_->module . " => " . $_->version } @$modules;
+		}
+
+	$Defaults{modules} = $modules;
+	}
+elsif( ! $Quiet ) {
+	say "Install Module::Extract::Use to detect prerequisites";
+	}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Extract declared Perl version
+if( eval "use Module::Extract::DeclaredMinimumPerl; 1" ) {
+	my $extor = Module::Extract::DeclaredMinimumPerl->new;
+	my $version = $extor->get_minimum_declared_perl( $Path );
+
+	unless( $Quiet ) {
+		say "\tFound minimum version $version";
+		}
+
+	$Defaults{minimum_perl_version} = $version;
+	}
+elsif( ! $Quiet ) {
+	say "Install Module::Extract::DeclaredMinimumPerl to detect minimum versions";
+	}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
 content( \%Defaults );
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Make directories
 my $Directory = "$Script.d";
 die <<"HERE" if -d $Directory;
