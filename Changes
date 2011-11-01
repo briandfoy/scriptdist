@@ -1,4 +1,4 @@
-# $Id$
+# Changes for scriptdist
 
 0.16 - Tue May 27 17:06:37 2008
 	* In compile.t template, use $^X, not "perl" (RT #36207)
