@@ -1,5 +1,9 @@
 # Changes for scriptdist
 
+0.21 - Tue Nov  1 13:57:59 2011
+	* Check for minimum perl version
+	* Extract prerequisites
+
 0.16 - Tue May 27 17:06:37 2008
 	* In compile.t template, use $^X, not "perl" (RT #36207)
 
