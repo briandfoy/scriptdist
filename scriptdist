@@ -387,10 +387,9 @@ sub content {
 CHANGES
 
 	$Content{"Makefile.PL"} =<<"MAKEFILE_PL";
-# \$Id\$
 use ExtUtils::MakeMaker;
 
-eval "use Test::Manifest 1.14";
+eval "use Test::Manifest 1.21";
 
 my \$script_name = "$$hash{script}";
 
