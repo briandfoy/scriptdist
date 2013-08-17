@@ -15,7 +15,7 @@ use File::Find qw(find);
 use File::Spec;
 use FindBin ();
 
-$VERSION = '0.21';
+$VERSION = '0.22';
 
 my $Quiet        = $ENV{SCRIPTDIST_DEBUG} || 0;  # print progress messages
 print "Quiet is $Quiet\n";
@@ -97,7 +97,7 @@ substitutes the script name, and VERSION, whose value is
 currently hard-coded at '0.10'.
 
 While looking for files, scriptdist skips directories named
-"CVS" and ".svn".
+F<CVS>, F<.git>, and F<.svn>.
 
 =item Add Changes
 
@@ -115,10 +115,10 @@ A bare bones Changes file
 
 =item Run make manifest
 
-=item prompt for CVS import
+=item Create git repo
 
-Prints a friendly message to remind you to add the new directory
-to your source control system.
+Unless you set the C<SCRIPTDIST_SKIP_GIT>, C<scriptdist> creates
+a git repo, adds everything, and does an initial import.
 
 =back
 
@@ -164,7 +164,7 @@ brian d foy, C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
-Copyright 2004-2011, brian d foy, All rights reserved.
+Copyright 2004-2013, brian d foy, All rights reserved.
 
 You may use this program under the same terms as Perl itself.
 
@@ -289,8 +289,8 @@ if( -e $Path ) {
 else {
 	print "Using script template...\n";
 
-	open my( $fh ), ">", $dist_script;
-	print $fh ( script_template( $Script ) );
+	open my $fh, ">", $dist_script;
+	print { $fh } script_template( $Script );
 	}
 }
 
@@ -300,11 +300,12 @@ chdir $Directory or die "Could not change to $Directory: $!\n";
 $ExtUtils::Manifest::Verbose = 0;
 ExtUtils::Manifest::mkmanifest;
 
+gitify();
+
 print <<"HERE";
 ------------------------------------------------------------------
-Remember to commit this directory to your source control system.
-In fact, why not do that right now?  Remember, `cvs import` works
-from within a directory, not above it.
+Remember to push this directory to your source control system.
+In fact, why not do that right now?
 ------------------------------------------------------------------
 HERE
 
@@ -355,6 +356,16 @@ sub copy {
 	print "Copied [$input] with $count replacements\n" unless $Quiet;
 	}
 
+sub gitify {
+	return if $ENV{SCRIPTDIST_SKIP_GIT};
+	chomp( my $git = `which git` );
+	return unless length $git && -x $git;
+	
+	system $git, qw'init';
+	system $git, qw'add .';
+	system $git, qw'commit -a -m ', "Initial commit by $0 $VERSION";
+	} 
+	
 sub script_template {
 	my $script_name = shift;
 
@@ -387,7 +398,7 @@ sub content {
 CHANGES
 
 	$Content{"Makefile.PL"} =<<"MAKEFILE_PL";
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.48;
 
 eval "use Test::Manifest 1.21";
 
@@ -407,18 +418,8 @@ WriteMakefile(
 				} @{$hash->{modules}}
  ] } 			},
 
-		'MAN1PODS'  => {
-			\$script_name => "\\\$(INST_MAN1DIR)/\$script_name.1",
-			},
 
-		(
-		\$ExtUtils::MakeMaker::VERSION ge '6.48' ?
-			(
-			MIN_PERL_VERSION => $$hash{minimum_perl_version},
-			)
-			:
-			()
-		),
+		MIN_PERL_VERSION => $$hash{minimum_perl_version},
 
 		clean => { FILES => "*.bak \$script_name-*" },
 		);
@@ -427,18 +428,20 @@ WriteMakefile(
 MAKEFILE_PL
 
 	$Content{"MANIFEST.SKIP"} =<<"MANIFEST_SKIP";
-.cvsignore
-.DS_Store
-.releaserc
-.svn
-.git
+\\.cvsignore
+\\.git
+\\.gitignore
+\\.DS_Store
+\\.releaserc
+\\.svn
+\\.git
 $$hash{script}-.*
 blib
 CVS
-Makefile.old
+Makefile\\.old
 Makefile\$
-MANIFEST.bak
-MANIFEST.SKIP
+MANIFEST\\.bak
+MANIFEST\\.SKIP
 pm_to_blib
 MANIFEST_SKIP
 
@@ -446,19 +449,18 @@ MANIFEST_SKIP
 cpan_user @{[ $ENV{CPAN_USER} ? $ENV{CPAN_USER} : '' ]}
 RELEASE_RC
 
-	$Content{".cvsignore"} =<<"CVSIGNORE";
+	$Content{".gitignore"} =<<"GITIGNORE";
 .DS_Store
 .lwpcookies
 $$hash{script}-*
 blib
 Makefile
 pm_to_blib
-CVSIGNORE
+GITIGNORE
 
 	$Content{"t/test_manifest"} =<<"TEST_MANIFEST";
 compile.t
 pod.t
-prereq.t
 TEST_MANIFEST
 
 	$Content{"t/pod.t"} = <<"POD_T";
@@ -467,14 +469,6 @@ eval "use Test::Pod 1.00";
 plan skip_all => "Test::Pod 1.00 required for testing POD" if \$@;
 all_pod_files_ok();
 POD_T
-
-
-	$Content{"t/prereq.t"} = <<"PREREQ_T";
-use Test::More;
-eval "use Test::Prereq";
-plan skip_all => "Test::Prereq required to test dependencies" if \$@;
-prereq_ok();
-PREREQ_T
 
 	$Content{"t/compile.t"} = <<"COMPILE_T";
 use Test::More tests => 1;
