@@ -1,5 +1,9 @@
 # Changes for scriptdist
 
+0.22 - Sat Aug 17 14:34:39 2013
+	* Update for Mastering Perl, 2e
+	* Use git instead of CVS
+
 0.21 - Tue Nov  1 13:57:59 2011
 	* Check for minimum perl version
 	* Extract prerequisites
