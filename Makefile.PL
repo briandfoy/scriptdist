@@ -1,4 +1,4 @@
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.48;
 
 require 5.010;
 
@@ -10,7 +10,7 @@ WriteMakefile(
 	'NAME'      => $script_name,
 	'ABSTRACT'  => 'Make a Perl dist around a script',
 
-	'VERSION'   => '0.21',
+	'VERSION'   => '0.22',
 	'LICENSE'   => 'perl',
 	'AUTHOR'    => 'brian d foy <bdfoy@cpan.org>',
 
@@ -20,8 +20,14 @@ WriteMakefile(
 		'Test::More' => '0',
 		},
 
-	'MAN1PODS'  => {
-		$script_name => "\$(INST_MAN1DIR)/$script_name.1",
+	'META_MERGE' => {
+		resources => {
+			repository => 'https://github.com/briandfoy/scriptdist',
+			},
+		no_index => {
+			dir       => [ qw( t ) ],
+			directory => [ qw( t ) ],
+			},
 		},
 
 	clean => { FILES => "*.bak $script_name-* " .
