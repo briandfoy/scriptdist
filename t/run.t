@@ -1,7 +1,8 @@
-use Test::More tests => 43;
+use Test::More 0.95;
 
 use Cwd;
 use File::Basename qw(basename);
+use File::Path qw(remove_tree);
 use File::Spec;
 
 my $script_path = 'blib/script/scriptdist';
@@ -39,10 +40,10 @@ system "../../$script_path", $options;
 # ensure scriptdist created files
 
 my @Files = ( qw(Makefile.PL Changes MANIFEST MANIFEST.SKIP INSTALL
-		.cvsignore .releaserc), 
+		.gitignore .releaserc), 
 	$target_script,
 	map { File::Spec->catfile( 't', $_ ) } 
-		qw(compile.t pod.t prereq.t test_manifest)
+		qw(compile.t pod.t test_manifest)
 	);
 	
 my $program_dir   = "$target_script.d";
@@ -86,7 +87,7 @@ SKIP: {
 	foreach my $file ( @Files )
 		{
 		#diag( "\tunlinking file $file\n" );
-		ok( unlink $file, "Removed $file" );
+		diag( "$file: $!" ) unless ok( unlink $file, "Removed $file" );
 		}
 	
 	$changed = chdir '..';
@@ -97,6 +98,8 @@ SKIP: {
 	foreach my $dir ( $t_dir, $program_dir )
 		{
 		#diag( "\tremoving dir $dir\n" );
-		ok( rmdir $dir, "Removed $dir" ) or diag( "Could not remove [$dir]: $!" );
+		ok( remove_tree $dir, "Removed $dir" ) or diag( "Could not remove [$dir]: $!" );
 		}
 	}
+
+done_testing();

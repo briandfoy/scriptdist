@@ -5,8 +5,6 @@ README
 scriptdist
 t/compile.t
 t/pod.t
-t/pod_coverage.t
-t/prereq.t
 t/run.t
 t/test_home_dir/.scriptdist/INSTALL
 t/test_home_dir/.scriptdist/Makefile.PL
