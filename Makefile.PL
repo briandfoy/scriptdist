@@ -1,4 +1,4 @@
-use ExtUtils::MakeMaker 6.64;
+use ExtUtils::MakeMaker 6.48;
 
 require 5.010;
 
