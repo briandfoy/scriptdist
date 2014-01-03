@@ -15,7 +15,7 @@ use File::Find qw(find);
 use File::Spec;
 use FindBin ();
 
-$VERSION = '0.22';
+$VERSION = '0.23';
 
 my $Quiet        = $ENV{SCRIPTDIST_DEBUG} || 0;  # print progress messages
 print "Quiet is $Quiet\n";
