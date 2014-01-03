@@ -1,8 +1,8 @@
-use ExtUtils::MakeMaker 6.48;
+use ExtUtils::MakeMaker 6.64;
 
 require 5.010;
 
-eval "use Test::Manifest 1.14";
+eval "use Test::Manifest 1.21";
 
 my $script_name = 'scriptdist';
 
@@ -10,7 +10,7 @@ WriteMakefile(
 	'NAME'      => $script_name,
 	'ABSTRACT'  => 'Make a Perl dist around a script',
 
-	'VERSION'   => '0.22',
+	'VERSION'   => '0.23',
 	'LICENSE'   => 'perl',
 	'AUTHOR'    => 'brian d foy <bdfoy@cpan.org>',
 

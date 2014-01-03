@@ -1,8 +1,5 @@
 # Changes for scriptdist
 
-0.22 - Fri Jan  3 12:29:46 2014
-	* Get rid of MYMETA
-
 0.22 - Sat Aug 17 14:34:39 2013
 	* Update for Mastering Perl, 2e
 	* Use git instead of CVS
