@@ -2,14 +2,16 @@ require 5.010;
 use strict;
 use warnings;
 
+use File::Spec::Functions qw(catfile);
+
+my $module    = 'App::scriptdist';
+my $github    = 'https://github.com/briandfoy/scriptdist';
+my $main_file = catfile( 'lib', split /::/, "$module.pm" );
 
 my $script_name = 'scriptdist';
 
-my $github    = 'https://github.com/briandfoy/';
-my $main_file = 'lib/';
-
 my %WriteMakefile = (
-	'NAME'          => $script_name,
+	'NAME'          => $module,
 	'ABSTRACT_FROM' => $main_file,
 	'VERSION_FROM'  => '0.23',
 	'LICENSE'       => 'perl',
