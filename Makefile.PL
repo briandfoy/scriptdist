@@ -56,7 +56,7 @@ my %WriteMakefile = (
 			},
 		},
 
-	clean => { FILES => "*.bak $script_name-* " .
+	clean => { FILES => "$dist-* " .
 		"t/test_home_dir/test_script.d" },
 	);
 
