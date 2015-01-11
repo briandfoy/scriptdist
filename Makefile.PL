@@ -15,6 +15,8 @@ my $main_file = catfile( 'lib', split /::/, "$module.pm" );
 my $script_name = 'scriptdist';
 
 my %WriteMakefile = (
+	'MIN_PERL_VERSION' => '5.010',
+
 	'NAME'          => $module,
 	'ABSTRACT_FROM' => $main_file,
 	'VERSION_FROM'  => '0.23',
