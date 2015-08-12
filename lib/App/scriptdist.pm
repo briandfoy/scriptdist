@@ -40,6 +40,8 @@ my $Dir_sep      = do {
 	else                       { '/'  }
 	};
 
+=encoding utf8
+
 =head1 NAME
 
 scriptdist - create a distribution for a perl script
