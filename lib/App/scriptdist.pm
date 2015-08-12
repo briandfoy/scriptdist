@@ -430,9 +430,8 @@ WriteMakefile(
 MAKEFILE_PL
 
 	$Content{"MANIFEST.SKIP"} =<<"MANIFEST_SKIP";
-\\.cvsignore
-\\.git
-\\.gitignore
+#!include_default
+
 \\.DS_Store
 \\.releaserc
 \\.svn
