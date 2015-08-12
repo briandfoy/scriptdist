@@ -44,7 +44,7 @@ my $Dir_sep      = do {
 
 =head1 NAME
 
-scriptdist - create a distribution for a perl script
+App::scriptdist - create a distribution around a perl script
 
 =head1 SYNOPSIS
 
