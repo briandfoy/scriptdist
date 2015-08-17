@@ -47,6 +47,7 @@ my $script_name = 'scriptdist';
 
 my %WriteMakefile = (
 	'MIN_PERL_VERSION' => '5.010',
+	'NORECURS'         => '1',
 
 	'NAME'          => $module,
 	'ABSTRACT_FROM' => $main_file,
