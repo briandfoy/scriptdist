@@ -19,6 +19,7 @@ use FindBin ();
 
 $VERSION = '0.24';
 
+=encoding utf8
 
 =head1 NAME
 
@@ -182,7 +183,7 @@ $show_message->( "Processing $Defaults{script}...\n" );
 $show_message->( "Quiet is $Defaults{quiet}\n" );
 $show_message->( "Home directory is $Defaults{home}\n" );
 
-my $Config_file  = catfile( 
+my $Config_file  = catfile(
 	$Defaults{home}, "." . $Defaults{name} . "rc" );
 
 warn <<"HERE" unless $Defaults{home} ne '';
@@ -199,8 +200,8 @@ if( eval "use $class; 1" ) {
 	my $extor   = $class->new;
 	my $modules = $extor->get_modules_with_details( $Defaults{path} );
 
-	$show_message->( "\tFound modules\n\t\t", join "\n\t\t", 
-		map { $_->module . " => " . ( $_->version // '0' ) } @$modules 
+	$show_message->( "\tFound modules\n\t\t", join "\n\t\t",
+		map { $_->module . " => " . ( $_->version // '0' ) } @$modules
 		);
 
 	$Defaults{modules} = $modules;
@@ -234,7 +235,7 @@ Directory $Defaults{directory} already exists! Either delete it or
 move it out of the way, then rerun this program.
 HERE
 
-foreach my $dir ( 
+foreach my $dir (
 		map { $_, catfile( $_, "t" ) } $Defaults{directory} ) {
 	$show_message->( "Making directory $dir...\n" );
 	mkdir $dir, 0755 or die "Could not make [$dir]: $!\n";

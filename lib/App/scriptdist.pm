@@ -38,10 +38,10 @@ App::scriptdist - create a distribution around a perl script
 
 This module provides the utility functions for the scriptdist program
 that builds a basic Perl CPAN distribution around a standalone script
-file that already exists. 
+file that already exists.
 
 I do not intend this for new development and don't want to create an
-authoring tool. You can do that with some other tool (or fork this 
+authoring tool. You can do that with some other tool (or fork this
 one and build your own).
 
 =head1 FUNCTIONS
@@ -50,7 +50,7 @@ one and build your own).
 
 =item prompt( QUERY )
 
-Provide a prompt, get the response, chomp the neewline, and return 
+Provide a prompt, get the response, chomp the neewline, and return
 the answer.
 
 =cut
@@ -67,7 +67,8 @@ sub prompt {
 
 =item find_files( DIRECTORY )
 
-Find all the
+Find all the files under a directory.
+
 =cut
 
 sub find_files {
@@ -86,6 +87,8 @@ sub find_files {
 	}
 
 =item copy( INPUT_FILE, OUTPUT_FILE, CONFIG_HASH )
+
+Copy the file from one place to another.
 
 =cut
 
@@ -109,7 +112,7 @@ sub copy {
 
 =item gitify()
 
-Unless the environment variable C<SCRIPTDIST_SKIP_GIT> is set, init 
+Unless the environment variable C<SCRIPTDIST_SKIP_GIT> is set, init
 a git repo, add all the files, and make the initial commit.
 
 =cut
@@ -126,32 +129,42 @@ sub gitify {
 
 =item script_template( SCRIPT_NAME )
 
+Return the script template.
+
 =cut
 
 sub script_template {
 	my $script_name = shift;
 
-	return <<"HERE";
-#!/usr/bin/perl
+	# Test::Pod thinks this stuff is pod if it's at the beginning
+	# of the line
+	my $script = <<"HERE";
+	#!/usr/bin/perl
 
-=head1 NAME
+	=head1 NAME
 
-$script_name - this script does something
+	$script_name - this script does something
 
-=head1 SYNOPSIS
+	=head1 SYNOPSIS
 
-=head1 DESCRIPTION
+	=head1 DESCRIPTION
 
-=head1 AUTHOR
+	=head1 AUTHOR
 
-=head1 COPYRIGHT
+	=head1 COPYRIGHT
 
-=cut
-
+	=cut
 HERE
+
+	$script =~ s/^\s+//gm;
+
+	return $script;
 	}
 
 =item content( CONFIG_HASH )
+
+Return a hash reference of the contents of the files to add. The key
+is the filename and the value is its contents.
 
 =cut
 
@@ -183,7 +196,7 @@ WriteMakefile(
 						my $v = $_->version // 0;
 						"\t\t\t" . $_->module . " => '$v'"
 					} @{$hash->{modules}} ), ''
-					), 
+					),
  ] } 			},
 
 
@@ -248,6 +261,8 @@ COMPILE_T
 
 	\%Content;
 	}
+
+=back
 
 =head1 TO DO
 
