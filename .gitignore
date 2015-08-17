@@ -32,3 +32,4 @@ nytprof.out
 pm_to_blib
 foo
 foo.d
+App-scriptdist*
