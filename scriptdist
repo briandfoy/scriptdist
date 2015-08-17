@@ -5,40 +5,20 @@ use v5.10;
 use strict;
 use warnings;
 
-use vars qw( %Content $VERSION );
+use vars qw( %Content $VERSION $Quiet $Rc_directory $Dir_sep );
+
+use App::scriptdist qw(:all);
 
 use Cwd;
 use ExtUtils::Command;
 use ExtUtils::Manifest;
 use File::Basename qw(basename);
-use File::Find qw(find);
 use File::Spec;
+use File::Spec::Functions;
 use FindBin ();
 
-$VERSION = '0.23';
+$VERSION = '0.24';
 
-my $Quiet        = $ENV{SCRIPTDIST_DEBUG} || 0;  # print progress messages
-print "Quiet is $Quiet\n";
-my $Name         = $FindBin::Script;
-my $Home         = $ENV{HOME} || '';
-
-print "Home directory is $Home\n" unless $Quiet;
-
-my $Rc_directory = File::Spec->catfile( $Home, "." . $Name );
-print "RC directory is $Rc_directory\n" unless $Quiet;
-my $Config_file  = File::Spec->catfile( $Home, "." . $Name . "rc" );
-
-warn <<"HERE" unless $Home ne '';
-The environment variable HOME has no value, so I will look in
-the current directory for $Rc_directory and $Config_file. Set
-the HOME environment variable to choose another directory.
-HERE
-
-my $Dir_sep      = do {
-	if(    $^O =~ m/MSWin32/ ) { '\\' }
-	elsif( $^O =~ m/Mac/  )    { ":"  }
-	else                       { '/'  }
-	};
 
 =head1 NAME
 
@@ -174,312 +154,152 @@ You may use this program under the same terms as Perl itself.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $Path   = $ARGV[0];
-my $Script = basename( $Path );
-
-print "Processing $Script...\n" unless $Quiet;
-
 my %Defaults = (
-	script               => $Script,
 	version              => '0.10',   # version for the copied script, not this one
 	minimum_perl_version => 5,
 	modules              => [],
+	name                 => $FindBin::Script,
+	home                 => ( $ENV{HOME} // '' ),
+	quiet                => ( $ENV{SCRIPTDIST_DEBUG} // 0 ),
+	path                 => $ARGV[0],
+	dir_sep              => do {
+       if(    $^O =~ m/MSWin32/ ) { '\\' }
+       elsif( $^O =~ m/Mac/  )    { ":"  }
+       else                       { '/'  }
+       },
 	);
+
+$Defaults{script}    = basename( $Defaults{path} );
+$Defaults{directory} = "$Defaults{script}.d";
+$Defaults{rc_dir}    = catfile( $Defaults{home}, "." . $Defaults{name} );
+
+my $show_message = sub {
+	return if $Defaults{quiet};
+	print $_[0];
+	};
+
+$show_message->( "Processing $Defaults{script}...\n" );
+$show_message->( "Quiet is $Defaults{quiet}\n" );
+$show_message->( "Home directory is $Defaults{home}\n" );
+
+my $Config_file  = catfile( 
+	$Defaults{home}, "." . $Defaults{name} . "rc" );
+
+warn <<"HERE" unless $Defaults{home} ne '';
+The environment variable HOME has no value, so I will look in
+the current directory for $Defaults{rc_dir} and $Config_file. Set
+the HOME environment variable to choose another directory.
+HERE
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract included modules
-if( eval "use Module::Extract::Use; 1" ) {
-	my $extor = Module::Extract::Use->new;
-	my $modules = $extor->get_modules_with_details( $Path );
+{
+my $class = 'Module::Extract::Use';
+if( eval "use $class; 1" ) {
+	my $extor   = $class->new;
+	my $modules = $extor->get_modules_with_details( $Defaults{path} );
 
-	unless( $Quiet ) {
-		say "\tFound modules\n\t\t", join "\n\t\t", map { $_->module . " => " . $_->version } @$modules;
-		}
+	$show_message->( "\tFound modules\n\t\t", join "\n\t\t", 
+		map { $_->module . " => " . ( $_->version // '0' ) } @$modules 
+		);
 
 	$Defaults{modules} = $modules;
 	}
-elsif( ! $Quiet ) {
-	say "Install Module::Extract::Use to detect prerequisites";
+else {
+	$show_message->( "Install $class to detect prerequisites\n" );
 	}
+}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Extract declared Perl version
-if( eval "use Module::Extract::DeclaredMinimumPerl; 1" ) {
-	my $extor = Module::Extract::DeclaredMinimumPerl->new;
-	my $version = $extor->get_minimum_declared_perl( $Path );
+{
+my $class = 'Module::Extract::DeclaredMinimumPerl';
+if( eval "use $class; 1" ) {
+	my $extor   = $class->new;
+	my $version = $extor->get_minimum_declared_perl( $Defaults{path} );
 
-	unless( $Quiet ) {
-		say "\tFound minimum version $version";
-		}
+	$show_message->( "\tFound minimum version $version\n" );
 
 	$Defaults{minimum_perl_version} = $version;
 	}
-elsif( ! $Quiet ) {
-	say "Install Module::Extract::DeclaredMinimumPerl to detect minimum versions";
+else {
+	$show_message->( "Install $class to detect minimum versions\n" );
 	}
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-content( \%Defaults );
+}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Make directories
-my $Directory = "$Script.d";
-die <<"HERE" if -d $Directory;
-Directory $Directory already exists! Either delete it or
+die <<"HERE" if -d $Defaults{directory};
+Directory $Defaults{directory} already exists! Either delete it or
 move it out of the way, then rerun this program.
 HERE
 
-foreach my $dir ( map { $_, File::Spec->catfile( $_, "t" ) } $Directory ) {
-	print "Making directory $dir...\n" unless $Quiet;
+foreach my $dir ( 
+		map { $_, catfile( $_, "t" ) } $Defaults{directory} ) {
+	$show_message->( "Making directory $dir...\n" );
 	mkdir $dir, 0755 or die "Could not make [$dir]: $!\n";
 	}
 
 # Copy local template files
-print "RC directory is $Rc_directory\n" unless $Quiet;
-print "cwd is ", getcwd, "\n";
+$show_message->( "RC directory is $Defaults{rc_dir}\n" );
+$show_message->( "cwd is ", getcwd, "\n" );
 
-if( -d $Rc_directory ) {
-	print "Looking for local templates...\n" unless $Quiet;
-	foreach my $input ( find_files( $Rc_directory ) ) {
-		my( $path ) = $input =~ m/\Q$Rc_directory$Dir_sep\E(.*)/g;
+if( -d $Defaults{rc_dir} ) {
+	$show_message->( "Looking for local templates...\n" );
+	foreach my $input ( find_files( $Defaults{rc_dir} ) ) {
+		my( $path ) = $input =~ m/\Q$Defaults{rc_dir}$Defaults{dir_sep}\E(.*)/g;
 
 		my @path = File::Spec->splitdir( $path );
 		my $file = pop @path;
 
 		if( @path ) {
-			local @ARGV = File::Spec->catfile( $Directory, @path );
+			local @ARGV = catfile( $Defaults{directory}, @path );
 			ExtUtils::Command::mkpath unless -d $ARGV[0];
 			}
 
-		my $output = File::Spec->catfile( $Directory, $path );
+		my $output = catfile( $Defaults{directory}, $path );
 		copy( $input, $output, \%Defaults );
 		}
 	}
 
-# Add distribution files unless they already exist
-FILE: foreach my $filename ( sort keys %Content ) {
-	my @path = split m|\Q$Dir_sep|, $filename;
 
-	my $file = File::Spec->catfile( $Directory, @path );
+FILE: foreach my $filename ( sort keys %{ content( \%Defaults ) } ) {
+	my @path = split m|\Q$Defaults{dir_sep}|, $filename;
 
-	print "Checking for file [$filename]... " unless $Quiet;
-	if( -e $file ) { print "already exists\n"; next FILE }
+	my $file = catfile( $Defaults{directory}, @path );
 
-	print "Adding file [$filename]...\n" unless $Quiet;
-	open my($fh), ">", $file or do {
+	$show_message->( "Checking for file [$filename]... " );
+	if( -e $file ) { $show_message->( "already exists\n" ); next FILE }
+
+	$show_message->( "Adding file [$filename]...\n" );
+	open my($fh), '>:utf8', $file or do {
 		warn "Could not write to [$file]: $!\n";
 		next FILE;
 		};
 
-	my $contents = $Content{$filename};
-
-	print $fh $contents;
+	print $fh $Content{$filename};
 	}
 
 # Add the script itself
 {
-print "Adding [$Script]...\n";
-my $dist_script = File::Spec->catfile( $Directory, $Script );
+$show_message->( "Adding [$Defaults{script}]...\n" );
+my $dist_script = catfile( $Defaults{directory}, $Defaults{script} );
 
-if( -e $Path ) {
-	print "Copying script...\n";
-	copy( $Path, $dist_script );
+if( -e $Defaults{path} ) {
+	$show_message->( "Copying script...\n" );
+	copy( $Defaults{path}, $dist_script );
 	}
 else {
-	print "Using script template...\n";
-
-	open my $fh, ">", $dist_script;
-	print { $fh } script_template( $Script );
+	$show_message->( "Using script template...\n" );
+	open my $fh, '>:utf8', $dist_script;
+	print { $fh } script_template( $Defaults{script} );
 	}
 }
 
 # Create the MANIFEST file
-print "Creating MANIFEST...\n";
-chdir $Directory or die "Could not change to $Directory: $!\n";
+$show_message->( "Creating MANIFEST...\n" );
+chdir $Defaults{directory} or die "Could not change to $Defaults{directory}: $!\n";
 $ExtUtils::Manifest::Verbose = 0;
 ExtUtils::Manifest::mkmanifest;
 
 gitify();
-
-print <<"HERE";
-------------------------------------------------------------------
-Remember to push this directory to your source control system.
-In fact, why not do that right now?
-------------------------------------------------------------------
-HERE
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-sub prompt {
-	my( $query ) = shift;
-
-	print $query;
-
-	chomp( my $reply = <STDIN> );
-
-	return $reply;
-	}
-
-sub find_files {
-	my $directory = shift;
-
-    my @files = ();
-
-    find( sub {
-        	return unless -f $_;
-        	return if $File::Find::name =~ m<(?:CVS|\.svn|\.git)>;
-        	#print STDERR "Found file $File::Find::name\n";
-			push( @files, $File::Find::name );
-    		}, $directory
-    	);
-
-    return @files;
-	}
-
-sub copy {
-	my( $input, $output, $hash ) = @_;
-
-	print "Opening input [$input] for output [$output]\n";
-
-	open my($in_fh),        $input  or die "Could not open [$input]: $!\n";
-	open my($out_fh), ">" . $output or warn "Could not open [$output]: $!\n";
-
-	my $count = 0;
-
-	while( readline $in_fh ) {
-		$count += s/%%SCRIPTDIST_(.*?)%%/$hash->{ lc $1 } || ''/gie;
-		print $out_fh $_
-		}
-
-	print "Copied [$input] with $count replacements\n" unless $Quiet;
-	}
-
-sub gitify {
-	return if $ENV{SCRIPTDIST_SKIP_GIT};
-	chomp( my $git = `which git` );
-	return unless length $git && -x $git;
-	
-	system $git, qw'init';
-	system $git, qw'add .';
-	system $git, qw'commit -a -m ', "Initial commit by $0 $VERSION";
-	} 
-	
-sub script_template {
-	my $script_name = shift;
-
-	return <<"HERE";
-#!/usr/bin/perl
-
-=head1 NAME
-
-$script_name - this script does something
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=head1 AUTHOR
-
-=head1 COPYRIGHT
-
-=cut
-
-HERE
-	}
-
-sub content {
-	my $hash = shift;
-
-	$Content{"Changes"} =<<"CHANGES";
-0.10 - @{ [ scalar localtime ] }
-	+ initial distribution created with $Name
-CHANGES
-
-	$Content{"Makefile.PL"} =<<"MAKEFILE_PL";
-use ExtUtils::MakeMaker 6.48;
-
-eval "use Test::Manifest 1.21";
-
-my \$script_name = "$$hash{script}";
-
-WriteMakefile(
-		'NAME'      => \$script_name,
-		'VERSION'   => '$$hash{version}',
-
-		'EXE_FILES' =>  [ \$script_name ],
-
-		'PREREQ_PM' => {
-@{ [
-				map {
-					my $v = $_->version // 0;
-					"\t\t\t" . $_->module . " => '$v'\n"
-				} @{$hash->{modules}}
- ] } 			},
-
-
-		MIN_PERL_VERSION => $$hash{minimum_perl_version},
-
-		clean => { FILES => "*.bak \$script_name-*" },
-		);
-
-1;
-MAKEFILE_PL
-
-	$Content{"MANIFEST.SKIP"} =<<"MANIFEST_SKIP";
-\\.cvsignore
-\\.git
-\\.gitignore
-\\.DS_Store
-\\.releaserc
-\\.svn
-\\.git
-$$hash{script}-.*
-blib
-CVS
-Makefile\\.old
-Makefile\$
-MANIFEST\\.bak
-MANIFEST\\.SKIP
-pm_to_blib
-MANIFEST_SKIP
-
-	$Content{".releaserc"} =<<"RELEASE_RC";
-cpan_user @{[ $ENV{CPAN_USER} ? $ENV{CPAN_USER} : '' ]}
-RELEASE_RC
-
-	$Content{".gitignore"} =<<"GITIGNORE";
-.DS_Store
-.lwpcookies
-$$hash{script}-*
-blib
-Makefile
-pm_to_blib
-GITIGNORE
-
-	$Content{"t/test_manifest"} =<<"TEST_MANIFEST";
-compile.t
-pod.t
-TEST_MANIFEST
-
-	$Content{"t/pod.t"} = <<"POD_T";
-use Test::More;
-eval "use Test::Pod 1.00";
-plan skip_all => "Test::Pod 1.00 required for testing POD" if \$@;
-all_pod_files_ok();
-POD_T
-
-	$Content{"t/compile.t"} = <<"COMPILE_T";
-use Test::More tests => 1;
-
-my \$file = "blib/script/$$hash{script}";
-
-print "bail out! Script file is missing!" unless -e \$file;
-
-my \$output = `$^X -c \$file 2>&1`;
-
-print "bail out! Script file is missing!" unless
-	like( \$output, qr/syntax OK\$/, 'script compiles' );
-COMPILE_T
-	}
