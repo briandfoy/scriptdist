@@ -1,5 +1,9 @@
 Revision history for Perl module scriptdist
 
+0.24 2015-08-17T22:04:15Z
+	* Move some things into a module, App::scripdist
+	* Everything is still really hacky.
+
 0.23 - 2014-01-03
 	* Get rid of MYMETA
 
