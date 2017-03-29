@@ -7,7 +7,11 @@ package App::scriptdist;
 use strict;
 use warnings;
 
-use vars qw( @EXPORT @EXPORT_OK %EXPORT_TAGS %Content $VERSION );
+use vars qw(
+	@EXPORT @EXPORT_OK %EXPORT_TAGS
+	%Content $VERSION
+	$Quiet
+	);
 
 $VERSION = '0.241';
 
@@ -15,6 +19,8 @@ $VERSION = '0.241';
 %EXPORT_TAGS = (
 	'all' => [ @EXPORT_OK ],
 	);
+
+$Quiet = 0;
 
 use Exporter qw(import);
 
