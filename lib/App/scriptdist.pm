@@ -266,15 +266,23 @@ COMPILE_T
 
 =head1 TO DO
 
-* Copy modules into lib directory (to create module dist)
+=over 4
 
-* Command line switches to turn things on and off
+=item * Copy modules into lib directory (to create module dist)
+
+=item * Command line switches to turn things on and off
+
+=back
 
 =head2 Maybe a good idea, maybe not
 
-* Add a cover.t and pod coverage test?
+=over 4
 
-* Interactive mode?
+=item * Add a cover.t and pod coverage test?
+
+=item * Interactive mode?
+
+=back
 
 =head1 SOURCE AVAILABILITY
 
