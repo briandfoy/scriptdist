@@ -1,5 +1,10 @@
 Revision history for Perl module scriptdist
 
+0.241 2017-03-29T05:29:44Z
+	* Fix up various distro things. I neglected a package statement.
+	Thus, this wasn't indexed. And then CPAN.pm went into a spiral
+	in  https://rt.cpan.org/Ticket/Display.html?id=120781 [D
+
 0.24 2015-08-17T22:04:15Z
 	* Move some things into a module, App::scripdist
 	* Everything is still really hacky.
