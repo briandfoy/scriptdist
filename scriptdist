@@ -278,6 +278,7 @@ FILE: foreach my $filename ( sort keys %{ content( \%Defaults ) } ) {
 		next FILE;
 		};
 
+	no warnings 'uninitialized';
 	print $fh $Content{$filename};
 	}
 
