@@ -7,7 +7,7 @@ use warnings;
 
 use vars qw( @EXPORT @EXPORT_OK %EXPORT_TAGS %Content $VERSION );
 
-$VERSION = '0.24';
+$VERSION = '0.241';
 
 @EXPORT_OK = qw( prompt find_files copy gitify content );
 %EXPORT_TAGS = (
