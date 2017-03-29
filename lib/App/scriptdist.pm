@@ -308,3 +308,5 @@ Copyright © 2004-2017, brian d foy C<< <bdfoy@cpan.org> >>. All rights reserved
 This code is available under the Artistic License 2.0.
 
 =cut
+
+1;
