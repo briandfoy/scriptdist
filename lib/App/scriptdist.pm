@@ -2,6 +2,8 @@
 use utf8;
 use v5.10;
 
+package App::scriptdist;
+
 use strict;
 use warnings;
 
