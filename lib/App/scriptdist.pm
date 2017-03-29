@@ -295,6 +295,6 @@ brian d foy, C<< <bdfoy@cpan.org> >>
 
 Copyright © 2004-2017, brian d foy C<< <bdfoy@cpan.org> >>. All rights reserved.
 
-You may use this program under the same terms as Perl itself.
+This code is available under the Artistic License 2.0.
 
 =cut
