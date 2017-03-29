@@ -13,7 +13,7 @@ $VERSION = '0.241';
 
 @EXPORT_OK = qw( prompt find_files copy gitify content );
 %EXPORT_TAGS = (
-	':all' => [ @EXPORT_OK ],
+	'all' => [ @EXPORT_OK ],
 	);
 
 use Exporter qw(import);
