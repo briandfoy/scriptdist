@@ -11,3 +11,7 @@ install:
 build_script:
   - perl Makefile.PL
   - dmake test
+branches:
+  only:
+    - master
+    - test
