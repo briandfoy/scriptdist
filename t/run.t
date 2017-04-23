@@ -11,7 +11,7 @@ my $script_name = basename( $script_path );
 my $target_script = 'test_script';
 my $options       = $target_script;
 
-my $Home      = $ENV{HOME} = File::Spec->catfile( 
+my $Home      = $ENV{HOME} = File::Spec->catfile(
 	getcwd(), 't', 'test_home_dir');
 
 my $Templates = File::Spec->catfile( $Home, "." . $script_name        );
@@ -40,12 +40,12 @@ system "../../$script_path", $options;
 # ensure scriptdist created files
 
 my @Files = ( qw(Makefile.PL Changes MANIFEST MANIFEST.SKIP INSTALL
-		.gitignore .releaserc), 
+		.gitignore .releaserc),
 	$target_script,
-	map { File::Spec->catfile( 't', $_ ) } 
+	map { File::Spec->catfile( 't', $_ ) }
 		qw(compile.t pod.t test_manifest)
 	);
-	
+
 my $program_dir   = "$target_script.d";
 my $t_dir         = File::Spec->catfile( $program_dir, 't' );
 
@@ -72,29 +72,29 @@ unlike( $data, qr/%%SCRIPTDIST.*?%%/, 'Replacement test has no more placeholders
 
 # ensure we are in the right directory before we delete files
 $changed = chdir $program_dir;
-ok( $changed, 'Change to program directory' ); 
+ok( $changed, 'Change to program directory' );
 
 SKIP: {
 	my $cwd = getcwd();
 	#diag( "cwd is $cwd, program dir is $program_dir\n" );
-	
-	skip "I do not think I am in the right directory!", scalar @Files + 3, 
+
+	skip "I do not think I am in the right directory!", scalar @Files + 3,
 			unless $changed &&
 		like( $cwd, qr/\Q$program_dir\E$/, 'Path has the new directory' );
-	
+
 	diag( "Cleaning up...\n" );
-	
+
 	foreach my $file ( @Files )
 		{
 		#diag( "\tunlinking file $file\n" );
 		diag( "$file: $!" ) unless ok( unlink $file, "Removed $file" );
 		}
-	
+
 	$changed = chdir '..';
 	ok( $changed, 'Moved above program dir' );
 	$cwd = getcwd();
 	#diag( "cwd is $cwd, program dir is $program_dir\n" );
-	
+
 	foreach my $dir ( $t_dir, $program_dir )
 		{
 		#diag( "\tremoving dir $dir\n" );
