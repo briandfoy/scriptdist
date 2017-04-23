@@ -5,7 +5,9 @@ use File::Basename qw(basename);
 use File::Path qw(remove_tree);
 use File::Spec;
 
-my $script_path = 'blib/script/scriptdist';
+my $script_path = File::Spec->catfile( qw(blib script scriptdist) );
+my $abs_script_path = File::Spec->rel2abs( $script_path );
+
 my $script_name = basename( $script_path );
 
 my $target_script = 'test_script';
@@ -38,7 +40,7 @@ ok( -f $Install,     'Template INSTALL exists'     );
 my $changed = chdir $Home;
 ok( $changed, 'Changed to home directory' );
 
-system "../../$script_path", $options;
+system $^X, $abs_script_path, $options;
 
 # ensure scriptdist created files
 
