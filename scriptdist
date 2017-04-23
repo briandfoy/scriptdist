@@ -249,9 +249,11 @@ if( -d $Defaults{rc_dir} ) {
 	$show_message->( "Looking for local templates...\n" );
 	foreach my $input ( find_files( $Defaults{rc_dir} ) ) {
 		my( $path ) = $input =~ m/\Q$Defaults{rc_dir}$Defaults{dir_sep}\E(.*)/g;
+		$show_message->( "Path is $path\n" );
 
 		my @path = File::Spec->splitdir( $path );
 		my $file = pop @path;
+		$show_message->( "File is $file\n" );
 
 		if( @path ) {
 			local @ARGV = catfile( $Defaults{directory}, @path );
@@ -259,6 +261,7 @@ if( -d $Defaults{rc_dir} ) {
 			}
 
 		my $output = catfile( $Defaults{directory}, $path );
+		$show_message->( "Output is $file\n" );
 		copy( $input, $output, \%Defaults );
 		}
 	}
