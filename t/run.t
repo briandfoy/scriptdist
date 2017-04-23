@@ -28,7 +28,7 @@ my $Install   = File::Spec->catfile( $Templates, 'INSTALL' );
 # ensure all of the files are in place
 ok( -e $script_path, 'scriptdist exists'           );
 SKIP: {
-	skip 'This is Windows', 1 if $^O eq 'Win32';
+	skip 'This is Windows', 1 if $^O eq 'MSWin32';
 	ok( -x $script_path, 'scriptdist is executable'    );
 	}
 ok( -e $program,     'Target program exists'       );
