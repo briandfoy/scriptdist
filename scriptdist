@@ -248,6 +248,9 @@ $show_message->( "cwd is ", getcwd, "\n" );
 if( -d $Defaults{rc_dir} ) {
 	$show_message->( "Looking for local templates...\n" );
 	foreach my $input ( find_files( $Defaults{rc_dir} ) ) {
+		$show_message->( "rc_dir is $Defaults{rc_dir}\n" );
+		$show_message->( "dir_sep is $Defaults{dir_sep}\n" );
+		$show_message->( "Input is $input\n" );
 		my( $path ) = $input =~ m/\Q$Defaults{rc_dir}$Defaults{dir_sep}\E(.*)/g;
 		$show_message->( "Path is $path\n" );
 
