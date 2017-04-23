@@ -103,7 +103,7 @@ Copy the file from one place to another.
 sub copy {
 	my( $input, $output, $hash ) = @_;
 
-	print "Opening input [$input] for output [$output]\n";
+	print STDERR "Opening input [$input] for output [$output]\n";
 
 	open my $in_fh,  '<', $input  or die "Could not open [$input]: $!\n";
 	open my $out_fh, '>', $output or warn "Could not open [$output]: $!\n";
@@ -112,10 +112,10 @@ sub copy {
 
 	while( readline $in_fh ) {
 		$count += s/%%SCRIPTDIST_(.*?)%%/$hash->{ lc $1 } || ''/gie;
-		print $out_fh $_
+		print {$out_fh} $_
 		}
 
-	print "Copied [$input] with $count replacements\n" unless $Quiet;
+	print STDERR "Copied [$input] with $count replacements\n" unless $Quiet;
 	}
 
 =item gitify()
