@@ -55,8 +55,7 @@ ok( -d $t_dir,       'Test directory exists'   );
 
 # ensure files exist
 foreach my $file ( map { File::Spec->catfile( $program_dir, $_ ) }
-	@Files  )
-	{
+	@Files  ) {
 	ok( -e $file, "File $file exists" );
 	}
 
