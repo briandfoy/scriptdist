@@ -176,7 +176,7 @@ $Defaults{rc_dir}    = catfile( $Defaults{home}, "." . $Defaults{name} );
 
 my $show_message = sub {
 	return if $Defaults{quiet};
-	print $_[0];
+	print STDERR $_[0];
 	};
 
 $show_message->( "Processing $Defaults{script}...\n" );
