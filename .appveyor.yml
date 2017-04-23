@@ -1,4 +1,6 @@
 skip_tags: true
+environment:
+  - SCRIPTDIST_DEBUG: 1
 cache:
   - C:\strawberry
 install:
