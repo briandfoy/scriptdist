@@ -5,6 +5,8 @@ use File::Basename qw(basename);
 use File::Path qw(remove_tree);
 use File::Spec;
 
+diag( "Testing on $^O" );
+
 my $script_path = File::Spec->catfile( qw(blib script scriptdist) );
 my $abs_script_path = File::Spec->rel2abs( $script_path );
 
