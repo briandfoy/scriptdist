@@ -46,7 +46,9 @@ system $^X, $abs_script_path, $options;
 
 # ensure scriptdist created files
 
-my @Files = ( qw(Makefile.PL Changes MANIFEST MANIFEST.SKIP INSTALL
+my @Files =
+	map { File::Spec->catfile( $program_dir, $_ ) }
+	( qw(Makefile.PL Changes MANIFEST MANIFEST.SKIP INSTALL
 		.gitignore .releaserc),
 	$target_script,
 	map { File::Spec->catfile( 't', $_ ) }
@@ -61,8 +63,7 @@ ok( -d $program_dir, 'Target directory exists' );
 ok( -d $t_dir,       'Test directory exists'   );
 
 # ensure files exist
-foreach my $file ( map { File::Spec->catfile( $program_dir, $_ ) }
-	@Files  ) {
+foreach my $file ( @Files ) {
 	ok( -e $file, "File $file exists" );
 	}
 
@@ -90,9 +91,10 @@ SKIP: {
 
 	diag( "Cleaning up...\n" );
 
-	foreach my $file ( @Files )
-		{
-		#diag( "\tunlinking file $file\n" );
+	# I remove files individually so I can see which ones cause
+	# problems.
+	foreach my $file ( @Files ) {
+		diag( "\tunlinking file $file\n" );
 		diag( "$file: $!" ) unless ok( unlink $file, "Removed $file" );
 		}
 
