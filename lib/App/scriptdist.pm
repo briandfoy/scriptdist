@@ -13,7 +13,7 @@ use vars qw(
 	$Quiet
 	);
 
-$VERSION = '0.241';
+$VERSION = '0.242';
 
 @EXPORT_OK = qw( prompt find_files copy gitify content );
 %EXPORT_TAGS = (
