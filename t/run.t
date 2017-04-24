@@ -46,8 +46,11 @@ system $^X, $abs_script_path, $options;
 
 # ensure scriptdist created files
 
+
+my $program_dir   = "$target_script.d";
+my $t_dir         = File::Spec->catfile( $program_dir, 't' );
+
 my @Files =
-	map { File::Spec->catfile( $program_dir, $_ ) }
 	( qw(Makefile.PL Changes MANIFEST MANIFEST.SKIP INSTALL
 		.gitignore .releaserc),
 	$target_script,
@@ -55,15 +58,12 @@ my @Files =
 		qw(compile.t pod.t test_manifest)
 	);
 
-my $program_dir   = "$target_script.d";
-my $t_dir         = File::Spec->catfile( $program_dir, 't' );
-
 # ensure directories exist
 ok( -d $program_dir, 'Target directory exists' );
 ok( -d $t_dir,       'Test directory exists'   );
 
 # ensure files exist
-foreach my $file ( @Files ) {
+foreach my $file ( 	map { File::Spec->catfile( $program_dir, $_ ) } @Files ) {
 	ok( -e $file, "File $file exists" );
 	}
 
