@@ -59,7 +59,7 @@
 
 
 \.travis\.yml
-appveyor\.yml
+\.?appveyor.yml
 \.releaserc
 \.lwpcookies
 scriptdist-.*
