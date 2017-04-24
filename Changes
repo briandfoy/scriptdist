@@ -1,5 +1,8 @@
 Revision history for Perl module scriptdist
 
+0.242 2017-04-24T05:45:35Z
+	* Fix a testing problem on Windows
+
 0.242 2017-04-24T05:44:38Z
 	* Fix a testing problem on Windows
 
