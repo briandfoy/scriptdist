@@ -1,5 +1,8 @@
 Revision history for Perl module scriptdist
 
+0.242 2017-04-24T05:44:38Z
+	* Fix a testing problem on Windows
+
 0.241 2017-03-29T05:29:44Z
 	* Fix up various distro things. I neglected a package statement.
 	Thus, this wasn't indexed. And then CPAN.pm went into a spiral
