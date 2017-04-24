@@ -63,7 +63,7 @@ ok( -d $program_dir, 'Target directory exists' );
 ok( -d $t_dir,       'Test directory exists'   );
 
 # ensure files exist
-foreach my $file ( 	map { File::Spec->catfile( $program_dir, $_ ) } @Files ) {
+foreach my $file ( map { File::Spec->catfile( $program_dir, $_ ) } @Files ) {
 	ok( -e $file, "File $file exists" );
 	}
 
@@ -72,6 +72,7 @@ my $install = File::Spec->catfile( $program_dir, 'INSTALL' );
 my $opened = open my $fh, '<', $install;
 ok( $opened, "Opened replacements test file\n" );
 my $data = do { local $/; <$fh> };
+close $fh;
 
   like( $data, qr/file for \Q$target_script/, 'Replacement test has script name' );
   like( $data, qr/version \Q0.10/, 'Replacement test has version' );
@@ -83,7 +84,7 @@ ok( $changed, 'Change to program directory' );
 
 SKIP: {
 	my $cwd = getcwd();
-	diag( "cwd is $cwd, program dir is $program_dir\n" );
+	# diag( "cwd is $cwd, program dir is $program_dir\n" );
 
 	skip "I do not think I am in the right directory!", scalar @Files + 3,
 			unless $changed &&
@@ -95,17 +96,17 @@ SKIP: {
 	# problems.
 	foreach my $file ( glob( '* .*' ) ) {
 		next if -d $file;
-		diag( "\tunlinking file $file\n" );
+		# diag( "\tunlinking file $file\n" );
 		diag( "$file: $!" ) unless ok( unlink $file, "Removed $file" );
 		}
 
 	$changed = chdir '..';
 	ok( $changed, 'Moved above program dir' );
 	$cwd = getcwd();
-	diag( "cwd is $cwd, program dir is $program_dir\n" );
+	# diag( "cwd is $cwd, program dir is $program_dir\n" );
 
 	foreach my $dir ( $t_dir, $program_dir ) {
-		diag( "\tremoving dir $dir\n" );
+		# diag( "\tremoving dir $dir\n" );
 		ok( remove_tree $dir, "Removed $dir" ) or diag( "Could not remove [$dir]: $!" );
 		}
 	}
