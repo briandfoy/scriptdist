@@ -68,7 +68,7 @@ foreach my $file ( map { File::Spec->catfile( $program_dir, $_ ) }
 
 #ensure template files have replacements
 my $install = File::Spec->catfile( $program_dir, 'INSTALL' );
-my $opened = open my($fh), $install;
+my $opened = open my $fh, '<', $install;
 ok( $opened, "Opened replacements test file\n" );
 my $data = do { local $/; <$fh> };
 
