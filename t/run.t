@@ -101,8 +101,7 @@ SKIP: {
 	$cwd = getcwd();
 	#diag( "cwd is $cwd, program dir is $program_dir\n" );
 
-	foreach my $dir ( $t_dir, $program_dir )
-		{
+	foreach my $dir ( $t_dir, $program_dir ) {
 		#diag( "\tremoving dir $dir\n" );
 		ok( remove_tree $dir, "Removed $dir" ) or diag( "Could not remove [$dir]: $!" );
 		}
