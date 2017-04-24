@@ -1,4 +1,4 @@
-Revision history for Perl module scriptdist
+Revision history for Perl module App::scriptdist
 
 0.242 2017-04-24T05:44:38Z
 	* Fix a testing problem on Windows
