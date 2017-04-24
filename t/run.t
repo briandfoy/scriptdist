@@ -93,7 +93,8 @@ SKIP: {
 
 	# I remove files individually so I can see which ones cause
 	# problems.
-	foreach my $file ( @Files ) {
+	foreach my $file ( glob( '* .*' ) ) {
+		next if -d $file;
 		diag( "\tunlinking file $file\n" );
 		diag( "$file: $!" ) unless ok( unlink $file, "Removed $file" );
 		}
