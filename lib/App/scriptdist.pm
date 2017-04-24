@@ -84,12 +84,17 @@ sub find_files {
 
     my @files = ();
 
-    find( sub {
-        	return unless -f $_;
-        	return if $File::Find::name =~ m<(?:CVS|\.svn|\.git)>;
-			push( @files, $File::Find::name );
-    		}, $directory
+	my $wanted = sub {
+		return unless -f $_;
+		return if $_ =~ m<(?:CVS|\.svn|\.git)>;
+		push @files, File::Spec->canonpath( $File::Find::name );
+		};
+
+    my %options = (
+    	wanted => $wanted,
     	);
+
+    find( \%options, $directory );
 
     return @files;
 	}
