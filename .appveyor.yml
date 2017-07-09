@@ -10,7 +10,7 @@ install:
   - cpanm --installdeps .
 build_script:
   - perl Makefile.PL
-  - dmake test
+  - gmake test
 branches:
   only:
     - master
