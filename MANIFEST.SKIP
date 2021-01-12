@@ -63,3 +63,6 @@
 \.releaserc
 \.lwpcookies
 scriptdist-.*
+\bMANIFEST\s\d
+\bChanges\s\d
+
