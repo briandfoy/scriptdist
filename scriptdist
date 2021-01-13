@@ -17,7 +17,7 @@ use File::Spec;
 use File::Spec::Functions;
 use FindBin ();
 
-$VERSION = '0.241';
+$VERSION = '1.001';
 
 =encoding utf8
 
