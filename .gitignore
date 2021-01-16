@@ -33,7 +33,8 @@ pm_to_blib
 foo
 foo.d
 App-scriptdist*
-*.icould
+*.icloud
+
 MANIFEST*[123456789]
 Changes*[123456789]
 
