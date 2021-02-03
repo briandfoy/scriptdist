@@ -16,7 +16,7 @@
 
 =for HTML <a href="https://metacpan.org/pod/App::scriptdist"><img src="https://img.shields.io/cpan/v/App-scriptdist.svg" /></A>
 
-.=head1 The App::scriptdist module
+=head1 The App::scriptdist module
 
 This is the I<README> for the L<App::scriptdist> Perl module. You're probably
 looking at this because you don't know where else to find what you're
