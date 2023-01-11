@@ -314,7 +314,7 @@ brian d foy, C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
-Copyright © 2004-2021, brian d foy C<< <bdfoy@cpan.org> >>. All rights reserved.
+Copyright © 2004-2023, brian d foy C<< <bdfoy@cpan.org> >>. All rights reserved.
 
 This code is available under the Artistic License 2.0.
 
