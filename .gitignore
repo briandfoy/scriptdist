@@ -37,4 +37,4 @@ App-scriptdist*
 
 MANIFEST*[123456789]
 Changes*[123456789]
-
+t/test_home_dir
