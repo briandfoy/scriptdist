@@ -15,7 +15,11 @@ use vars qw(
 
 $VERSION = '1.003';
 
-@EXPORT_OK = qw( prompt find_files copy gitify content );
+@EXPORT_OK = qw(
+	prompt find_files copy gitify content
+	script_template
+	%Content
+	);
 %EXPORT_TAGS = (
 	'all' => [ @EXPORT_OK ],
 	);
