@@ -247,6 +247,7 @@ $$hash{script}-*
 blib
 Makefile
 pm_to_blib
+MYMETA\.
 GITIGNORE
 
 	$Content{"t/test_manifest"} =<<"TEST_MANIFEST";
