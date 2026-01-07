@@ -319,7 +319,7 @@ brian d foy, C<< <briandfoy@pobox.com> >>
 
 =head1 COPYRIGHT
 
-Copyright © 2004-2025, brian d foy C<< <briandfoy@pobox.com> >>. All rights reserved.
+Copyright © 2004-2026, brian d foy C<< <briandfoy@pobox.com> >>. All rights reserved.
 
 This code is available under the Artistic License 2.0.
 
